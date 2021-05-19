@@ -1,0 +1,15 @@
+node_modules/
+package-lock.json
+public/assets
+
+# Ignore .idea files
+.idea/
+.vscode/
+.env
+
+# ignore all generated images
+
+
+# don’t ignore keep files
+!.keep
+!.gitkeep
