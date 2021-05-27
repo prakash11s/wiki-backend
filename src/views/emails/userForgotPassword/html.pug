@@ -1,0 +1,21 @@
+include ../header
+    tr
+        td(style="text-align: left; padding: 0 20px;")
+            p(style="font-size: 16px; margin-top: 0; color: #000000; font-family: 'Open Sans', sans-serif; font-weight: 400;")
+                | Hi #{username},
+    tr
+        td(style="text-align: left; padding: 0 20px;")
+            p(style="font-size: 14px; margin-top: 10px; color: #000000; font-family: 'Open Sans', sans-serif; font-weight: 400;")
+                | It looks like you forgot your password and requested a new one. No need to worry, we have a new password for you!
+    tr
+        td(style="text-align: left; padding: 0 20px;")
+            p(style="font-size: 14px; margin-top: 10px; color: #000000; font-family: 'Open Sans', sans-serif; font-weight: 400;")
+                | Your new password is:
+                span(style="font-weight: 700;") &nbsp; #{otp}
+    tr
+        td(style="text-align: left; padding: 15px 20px;")
+            p(style="font-size: 14px; margin-top: 10px; margin-bottom: 0; color: #000000; font-family: 'Open Sans', sans-serif; font-weight: 600;")
+                | Thanks you,
+            p(style="font-size: 14px; margin-top: 0; color: #000000; font-family: 'Open Sans', sans-serif; font-weight: 400;")
+                | Team #{appName}
+    include ../footer
