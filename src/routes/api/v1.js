@@ -8,7 +8,6 @@ const {
 
 const {
   userRegistration,
-  checkSocialRegistration,
   login,
   verifyEmail,
   forgotPassword,
@@ -31,8 +30,7 @@ const authMiddlewareWithoutFormidable = (() => {
   return chain
 })()
 
-router.post('/registration', [maintenanceMode], userRegistration)
-router.post('/social-check', [maintenanceMode], checkSocialRegistration)
+router.post('/registration', formidableMiddleware(), [maintenanceMode], userRegistration)
 router.post('/login', [maintenanceMode], login)
 router.post('/verify-user', [maintenanceMode], verifyEmail)
 router.post('/forgot-password', [maintenanceMode], forgotPassword)

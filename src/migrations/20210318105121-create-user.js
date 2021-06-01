@@ -44,6 +44,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true
       },
+      profile_image: {
+        type: Sequelize.STRING(50),
+        allowNull: true
+      },
       verification_status: {
         type: Sequelize.INTEGER,
         allowNull: false,

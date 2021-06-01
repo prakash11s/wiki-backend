@@ -24,5 +24,7 @@
 	"AccountAlreadyExist": "AccountAlreadyExist",
 	"userRegisterValidationMobilePattern": "userRegisterValidationMobilePattern",
 	"loginPasswordValidationPasswordRequired": "loginPasswordValidationPasswordRequired",
-	"socialAccNotFoundSignupToContinue": "socialAccNotFoundSignupToContinue"
+	"socialAccNotFoundSignupToContinue": "socialAccNotFoundSignupToContinue",
+	"userRegisterValidationEmailRequired": "userRegisterValidationEmailRequired",
+	"loginPasswordValidationEmailRequired": "loginPasswordValidationEmailRequired"
 }

@@ -43,6 +43,9 @@ module.exports = (sequelize, DataTypes) => {
     qr_code: {
       type: DataTypes.STRING
     },
+    profile_image: {
+      type: DataTypes.STRING(50)
+    },
     verification_status: {
       type: DataTypes.INTEGER
     },
