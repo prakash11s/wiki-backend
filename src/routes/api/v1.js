@@ -11,7 +11,9 @@ const {
   login,
   verifyEmail,
   forgotPassword,
-  changePassword
+  changePassword,
+  editProfile,
+  kycAdd
 } = require('../../controllers/api/authController')
 
 const authMiddleware = (() => {
@@ -35,4 +37,6 @@ router.post('/login', [maintenanceMode], login)
 router.post('/verify-user', [maintenanceMode], verifyEmail)
 router.post('/forgot-password', [maintenanceMode], forgotPassword)
 router.post('/change-password', [authMiddleware], changePassword)
+router.post('/edit/profile',  editProfile)
+router.post('/add/kyc', [authMiddleware], kycAdd)
 module.exports = router

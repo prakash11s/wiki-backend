@@ -11,18 +11,21 @@ const {
 } = require('../../services/UserValidation')
 const {
     forgotPasswordValidation,
-    changePasswordValidation,
-    editProfileValidation
+    changePasswordValidation
 } = require('../../services/AdminValidation')
+const {
+    editProfileValidation,
+    kycValidation
+} = require('../../services/UserValidation')
 const {Login} = require('../../transformers/api/UserTransformer')
-const {User, userSocial} = require('../../models')
+const {User, userSocial, user_kyc} = require('../../models')
 const {issueUser} = require('../../services/jwtTokenForUser')
 const {Op} = require('sequelize')
 const QRCode = require('qrcode')
 const path = require('path')
 const fs = require('fs')
 const Mailer = require('../../services/Mailer')
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const _ = require('lodash')
 
 module.exports = {
@@ -538,97 +541,199 @@ module.exports = {
      * @param res
      */
     editProfile: async (req, res) => {
-        const { authAdminId } = req;
+        console.log("hi")
+        const { authUserId } = req;
         const requestParams = req.fields;
+        let image = false
         // eslint-disable-next-line no-undef
         editProfileValidation(requestParams, res, async (validate) => {
             if (validate) {
-                let image = requestParams.image && requestParams.image !== '' ? requestParams.image : null;
-
-                const extension =
-                    requestParams.image && requestParams.image !== ''
-                        ? requestParams.image.split(';')[0].split('/')[1]
-                        : ''
-                const imageName =
-                    requestParams.image && requestParams.image !== ''
-                        ? `${moment().unix()}${Helper.makeRandomDigit(6)}.${extension}`
-                        : null
-                const imageExtArr = ['jpg', 'jpeg', 'png']
-                if (imageName && !imageExtArr.includes(extension)) {
-                    return Response.errorResponseWithoutData(
+                let checkMobileExist
+                let checkEmailExist
+                const time = moment().unix()
+                if (req.files.profile_image && req.files.profile_image.size > 0) {
+                    image = true
+                    await Helper.imageValidation(req, res, req.files.profile_image)
+                    await Helper.imageSizeValidation(req, res, req.files.profile_image.size)
+                } else {
+                    return Response.errorResponseData(
                         res,
-                        res.__('imageInvalid'),
+                        res.__('imageIsRequired'),
                         Constants.BAD_REQUEST
                     )
                 }
+                const imageName = image ? `${time}${path.extname(req.files.profile_image.name)}` : ''
 
-                if(image){
-                    await Helper.imageSizeValidation(requestParams.image, req, res)
-                }
 
-                // eslint-disable-next-line no-shadow
-                const admin = {
-                    first_name: requestParams.first_name,
-                    last_name: requestParams.last_name,
-                    last_name: requestParams.last_name,
-                    last_name: requestParams.last_name
-                };
-                const id = mongoose.Types.ObjectId(authAdminId);
-                Admin.findOne({
-                    _id: id,
-                    status: Constants.ACTIVE
-                })
-                    .then(async (adminData) => {
-                        let oldImage = null;
-                        if (adminData) {
-                            if (image) {
-                                admin.image = imageName;
-                                oldImage = adminData.image;
-                            } else {
-                                admin.image = adminData.image;
-                            }
-                                        const profilePicture = image ? imageName : adminData.image;
-                                        // eslint-disable-next-line no-param-reassign
-                                        result.username = `${result.first_name} ${result.last_name}`;
-                                        // eslint-disable-next-line no-param-reassign
-                                        result.image = Helpers.mediaUrlForS3(ADMIN_IMAGE, profilePicture);
-                                        if (image) {
-                                            const imageUpload = await Helpers.uploadImage(
-                                                imageName,
-                                                ADMIN_IMAGE,
-                                                req,
-                                                res
-                                            );
-                                            if (imageUpload) {
-                                                await Helpers.removeOldImage(
-                                                    oldImage,
-                                                    ADMIN_IMAGE
-                                                );
-                                            }
-                                        }
-                                        Response.successResponseData(res, new Transformer.Single(result, AdminDetails).parse(), SUCCESS, res.__('adminProfileUpdated'));
-
+                checkMobileExist = User.findOne({
+                    where: {
+                        mobile: requestParams.mobile,
+                        status: {
+                            [Op.ne]: Constants.DELETE
                         }
-                        else {
+                    }
+                })
+                checkEmailExist = User.findOne({
+                    where: {
+                        email: requestParams.email,
+                        status: {
+                            [Op.ne]: Constants.DELETE
+                        }
+                    }
+                })
+
+                await checkEmailExist.then(async (emailData) => {
+                    if (emailData) {
+                        const checkUser = await socialAccountCheckByUser(emailData.id, res)
+                        if (!checkUser) {
+                            Response.socialError(res, res.locals.__('EmailAlreadyExist'), Constants.ACCOUNT_TYPE.LOCAL)
+                        }
+                    } else {
+                        await checkMobileExist.then(async (mobData) => {
+                            if (mobData) {
+                                return Response.successResponseWithoutData(
+                                    res,
+                                    res.__('mobileExists'),
+                                    Constants.FAIL
+                                )
+                            } else {
+                                // eslint-disable-next-line no-shadow
+                                const admin = {
+                                    first_name: requestParams.first_name,
+                                    last_name: requestParams.last_name,
+                                    address: requestParams.address,
+                                    email: requestParams.email,
+                                    mobile: requestParams.mobile,
+                                };
+                                User.findOne({
+                                    id: authUserId,
+                                    status: Constants.ACTIVE
+                                })
+                                    .then(async (userData) => {
+                                        let oldImage = null;
+                                        if (userData) {
+                                            if (image) {
+                                                admin.image = imageName;
+                                                oldImage = userData.image;
+                                            } else {
+                                                admin.image = userData.image;
+                                            }
+
+                                            if (image) {
+                                                const imageUpload = await Helper.uploadImage(
+                                                    imageName,
+                                                    Constants.USER_PROFILE_IMAGE,
+                                                    req,
+                                                    res
+                                                );
+                                                if (imageUpload) {
+                                                    await Helper.removeOldImage(
+                                                        oldImage,
+                                                        Constants.USER_PROFILE_IMAGE
+                                                    );
+                                                }
+                                            }
+                                            Response.successResponseData(res, Constants.SUCCESS, res.__('userProfileUpdated'));
+
+                                        }
+                                        else {
+                                            Response.successResponseWithoutData(
+                                                res,
+                                                res.__('UserNotExist'),
+                                                Constants.FAIL
+                                            );
+                                        }
+                                    })
+                                    .catch((e) => {
+                                        Response.errorResponseData(
+                                            res,
+                                            res.__('internalError'),
+                                            Constants.INTERNAL_SERVER
+                                        );
+                                    });
+                            }
+                        })
+                    }
+                })
+            }
+        });
+    },
+
+    /**
+     * @description 'This function is use to add leave.'
+     * @param req
+     * @param res
+     * @returns {Promise<void>}
+     */
+    kycAdd: async (req, res) => {
+        const requestParams = req.fields
+        let image = false
+        kycValidation(requestParams, res, async (validate) => {
+            if (validate) {
+                const time = moment().unix()
+                if (req.files.photo_id_image && req.files.photo_id_image.size > 0) {
+                    image = true
+                    await Helper.imageValidation(req, res, req.files.photo_id_image)
+                    await Helper.imageSizeValidation(req, res, req.files.photo_id_image.size)
+                } else {
+                    return Response.errorResponseData(
+                        res,
+                        res.__('imageIsRequired'),
+                        Constants.BAD_REQUEST
+                    )
+                }
+                if (req.files.address_image && req.files.address_image.size > 0) {
+                    image = true
+                    await Helper.imageValidation(req, res, req.files.address_image)
+                    await Helper.imageSizeValidation(req, res, req.files.address_image.size)
+                } else {
+                    return Response.errorResponseData(
+                        res,
+                        res.__('imageIsRequired'),
+                        Constants.BAD_REQUEST
+                    )
+                }
+                const imageName = image ? `${time}${path.extname(req.files.photo_id_image.name)}` : ''
+                const imageName2 = image ? `${time}${path.extname(req.files.address_image.name)}` : ''
+                const userKycObj = {
+                    firstName: requestParams.firstName,
+                    lastName: requestParams.lastName,
+                    dob: requestParams.dob,
+                    address: requestParams.address,
+                    city: requestParams.city,
+                    state: requestParams.state,
+                    zipcode: requestParams.zipcode,
+                }
+                if(image){
+                    userKycObj.photo_id_proof = requestParams.photo_id_proof
+                    userKycObj.photo_id_image = imageName
+                    userKycObj.address_proof = requestParams.address_proof
+                    userKycObj.address_image = imageName2
+                }
+                await user_kyc.create(userKycObj)
+                    .then(async (result) => {
+                        if (result) {
+                            if(image){
+                                await Helper.uploadImage(req.files.photo_id_image, Constants.USER_PROFILE_IMAGE, imageName)
+                                await Helper.uploadImage(req.files.address_proof, Constants.USER_PROFILE_IMAGE, imageName2)
+                            }
                             Response.successResponseWithoutData(
                                 res,
-                                res.__('AdminNotExist'),
-                                Constants.FAIL
-                            );
+                                res.__('kyc added successfully.'),
+                                Constants.SUCCESS,
+                            )
                         }
                     })
-                    .catch((e) => {
+                    .catch(async () => {
                         Response.errorResponseData(
                             res,
                             res.__('internalError'),
                             Constants.INTERNAL_SERVER
-                        );
-                    });
+                        )
+                    })
             }
-        });
-    }
-
-
+        })
+    },
 }
 /*-----------------------------------User Functions-------------------------------------------*/
 

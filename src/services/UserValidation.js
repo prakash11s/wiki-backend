@@ -57,5 +57,44 @@ module.exports = {
     }
     return callback(true)
   },
+  kycValidation: (req, res, callback) => {
+    const schema = Joi.object({
+      first_name: Joi.string().trim().required(),
+      last_name: Joi.string().trim().required(),
+      dob: Joi.date().trim().required(),
+      address: Joi.string().trim().min(10).required(),
+      city: Joi.string().trim().required(),
+      state: Joi.string().trim().required(),
+      zipcode: Joi.string().trim().required(),
+      photo_id_proof: Joi.string().trim().required(),
+      address_proof: Joi.string().trim().required()
+    })
+    const { error } = schema.validate(req)
+    if (error) {
+      return Response.validationErrorResponseData(
+          res,
+          res.__(Helper.validationMessageKey('kycValidation', error))
+      )
+    }
+    return callback(true)
+  },
+  editProfileValidation: (req, res, callback) => {
+    const requestObj = {
+      first_name: Joi.string().trim().max(60).optional(),
+      last_name: Joi.string().trim().max(60).optional(),
+      email: Joi.string().email().optional(),
+      image: Joi.string().allow('').trim().optional()
+    };
+
+    const schema = Joi.object(requestObj);
+    const { error } = schema.validate(req);
+    if (error) {
+      return Response.validationErrorResponseData(
+          res,
+          res.__(Helper.validationMessageKey('editProfileValidation', error))
+      );
+    }
+    return callback(true);
+  },
 
 }
