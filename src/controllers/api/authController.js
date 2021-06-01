@@ -11,7 +11,8 @@ const {
 } = require('../../services/UserValidation')
 const {
     forgotPasswordValidation,
-    changePasswordValidation
+    changePasswordValidation,
+    editProfileValidation
 } = require('../../services/AdminValidation')
 const {Login} = require('../../transformers/api/UserTransformer')
 const {User, userSocial} = require('../../models')
@@ -554,6 +555,102 @@ module.exports = {
                 )
             }
         })
+    },
+
+    /**
+     * @description Edit Profile
+     * @param req
+     * @param res
+     */
+    editProfile: async (req, res) => {
+        const { authAdminId } = req;
+        const requestParams = req.fields;
+        // eslint-disable-next-line no-undef
+        editProfileValidation(requestParams, res, async (validate) => {
+            if (validate) {
+                let image = requestParams.image && requestParams.image !== '' ? requestParams.image : null;
+
+                const extension =
+                    requestParams.image && requestParams.image !== ''
+                        ? requestParams.image.split(';')[0].split('/')[1]
+                        : ''
+                const imageName =
+                    requestParams.image && requestParams.image !== ''
+                        ? `${moment().unix()}${Helper.makeRandomDigit(6)}.${extension}`
+                        : null
+                const imageExtArr = ['jpg', 'jpeg', 'png']
+                if (imageName && !imageExtArr.includes(extension)) {
+                    return Response.errorResponseWithoutData(
+                        res,
+                        res.__('imageInvalid'),
+                        Constants.BAD_REQUEST
+                    )
+                }
+
+                if(image){
+                    await Helper.imageSizeValidation(requestParams.image, req, res)
+                }
+
+                // eslint-disable-next-line no-shadow
+                const admin = {
+                    first_name: requestParams.first_name,
+                    last_name: requestParams.last_name,
+                    last_name: requestParams.last_name,
+                    last_name: requestParams.last_name
+                };
+                const id = mongoose.Types.ObjectId(authAdminId);
+                Admin.findOne({
+                    _id: id,
+                    status: Constants.ACTIVE
+                })
+                    .then(async (adminData) => {
+                        let oldImage = null;
+                        if (adminData) {
+                            if (image) {
+                                admin.image = imageName;
+                                oldImage = adminData.image;
+                            } else {
+                                admin.image = adminData.image;
+                            }
+                                        const profilePicture = image ? imageName : adminData.image;
+                                        // eslint-disable-next-line no-param-reassign
+                                        result.username = `${result.first_name} ${result.last_name}`;
+                                        // eslint-disable-next-line no-param-reassign
+                                        result.image = Helpers.mediaUrlForS3(ADMIN_IMAGE, profilePicture);
+                                        if (image) {
+                                            const imageUpload = await Helpers.uploadImage(
+                                                imageName,
+                                                ADMIN_IMAGE,
+                                                req,
+                                                res
+                                            );
+                                            if (imageUpload) {
+                                                await Helpers.removeOldImage(
+                                                    oldImage,
+                                                    ADMIN_IMAGE
+                                                );
+                                            }
+                                        }
+                                        Response.successResponseData(res, new Transformer.Single(result, AdminDetails).parse(), SUCCESS, res.__('adminProfileUpdated'));
+
+                        }
+                        else {
+                            Response.successResponseWithoutData(
+                                res,
+                                res.__('AdminNotExist'),
+                                Constants.FAIL
+                            );
+                        }
+                    })
+                    .catch((e) => {
+                        Response.errorResponseData(
+                            res,
+                            res.__('internalError'),
+                            Constants.INTERNAL_SERVER
+                        );
+                    });
+            }
+        });
     }
 
 
