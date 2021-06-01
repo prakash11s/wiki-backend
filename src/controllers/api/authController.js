@@ -32,12 +32,25 @@ module.exports = {
      * @param res
      */
     userRegistration: async (req, res) => {
-        const requestParams = req.body
+        const requestParams = req.fields
+        let image = false
         userRegisterValidation(requestParams, res, async (validate) => {
             if (validate) {
                 let checkMobileExist
                 let checkEmailExist
                 const time = moment().unix()
+                if (req.files.profile_image && req.files.profile_image.size > 0) {
+                    image = true
+                    await Helper.imageValidation(req, res, req.files.profile_image)
+                    await Helper.imageSizeValidation(req, res, req.files.profile_image.size)
+                } else {
+                    return Response.errorResponseData(
+                        res,
+                        res.__('imageIsRequired'),
+                        Constants.BAD_REQUEST
+                    )
+                }
+                const imageName = image ? `${time}${path.extname(req.files.profile_image.name)}` : ''
                 checkMobileExist = User.findOne({
                     where: {
                         mobile: requestParams.mobile,
@@ -87,7 +100,8 @@ module.exports = {
                                     mobile: requestParams.mobile,
                                     otp,
                                     otp_expiry: otpTokenExpire,
-                                    qr_code: `${time}.png`
+                                    qr_code: `${time}.png`,
+                                    profile_image : imageName
                                 }
                                 if (!requestParams.provider_data) {
                                     const locals = {
@@ -98,10 +112,11 @@ module.exports = {
                                         lab_admin_url: process.env.ADMIN_APP_URL.trim()
                                     }
                                     try {
-                                        const mail = await Mailer.sendMail(requestParams.email, 'New Password', Helper.newPasswordTemplate, locals)
-                                        if (!mail) {
-                                            return Response.errorResponseData(res, res.locals.__('globalError'), Constants.INTERNAL_SERVER)
-                                        }
+                                        // const mail = await Mailer.sendMail(requestParams.email, 'New Password', Helper.newPasswordTemplate, locals)
+                                        // if (!mail) {
+                                        //     return Response.errorResponseData(res, res.locals.__('globalError'), Constants.INTERNAL_SERVER)
+                                        // }
+                                        console.log('mail-sent')
                                     } catch (e) {
                                         console.log(e)
                                         return Response.errorResponseData(
@@ -114,6 +129,9 @@ module.exports = {
                                 await User.create(UserObj)
                                     .then(async (result) => {
                                         if (result) {
+                                            if (image) {
+                                                await Helper.uploadImage(req.files.profile_image, Constants.USER_PROFILE_IMAGE, imageName)
+                                            }
                                             const qrLocation = path.join(__dirname, '../../../public/uploads') + '/' + Constants.USER_QR_CODE + '/'
                                             if (!fs.existsSync(qrLocation)) {
                                                 fs.mkdirSync(qrLocation, {recursive: true}, (err) => {
@@ -152,50 +170,6 @@ module.exports = {
                 })
             }
         })
-    },
-
-
-    /**
-     * @description "This function is for Checking-Social-Registration."
-     * @param req
-     * @param res
-     */
-    checkSocialRegistration: async (req, res) => {
-        const body = req.body
-        let socialId = false
-        if ('google_id' in body.provider_data) {
-            socialId = body.provider_data.google_id
-        } else if ('facebook_id' in body.provider_data) {
-            socialId = body.provider_data.facebook_id
-        }
-        const user = await socialAccountCheckByID(socialId, res)
-        if (!user) {
-            if (body.email) {
-                const localUser = await User.findOne({
-                    where: {
-                        email: body.email
-                    },
-                    include: ['userSocial']
-                })
-                if (localUser && localUser.userSocial) {
-                    if (localUser.userSocial.name === 'GOOGLE') {
-                        Response.socialError(res, res.locals.__('socialAccountAlreadyExistWithGoogle'), Constants.ACCOUNT_TYPE.GOOGLE)
-                    } else if (localUser.userSocial.name === 'FACEBOOK') {
-                        Response.socialError(res, res.locals.__('socialAccountAlreadyExistWithFacebook'), Constants.ACCOUNT_TYPE.FACEBOOK)
-                    }
-                } else {
-                    Response.socialCheckResponse(
-                        res,
-                        true,
-                    )
-                }
-            } else {
-                Response.socialCheckResponse(
-                    res,
-                    false,
-                )
-            }
-        }
     },
 
 
@@ -262,6 +236,7 @@ module.exports = {
                         user.created_at = Helper.dateTimeTimestamp(user.createdAt)
                         user.updated_at = Helper.dateTimeTimestamp(user.updatedAt)
                         user.qr_code = Helper.mediaUrl(Constants.USER_QR_CODE, user.qr_code)
+                        user.profile_image = Helper.mediaUrl(Constants.USER_PROFILE_IMAGE, user.profile_image)
                         const token = issueUser(payload)
                         const meta = {token}
                         return Response.successResponseData(

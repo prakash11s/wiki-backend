@@ -7,6 +7,7 @@ module.exports = {
     address: 'address',
     mobile: 'mobile',
     qr_code: 'qr_code',
+    profile_image: 'profile_image',
     verification_status: 'verification_status',
     status: 'status',
     createdAt: 'created_at',
