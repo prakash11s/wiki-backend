@@ -541,122 +541,129 @@ module.exports = {
      * @param res
      */
     editProfile: async (req, res) => {
-        console.log("hi")
-        const { authUserId } = req;
-        const requestParams = req.fields;
-        let image = false
-        // eslint-disable-next-line no-undef
+        const requestParams = req.fields
         editProfileValidation(requestParams, res, async (validate) => {
             if (validate) {
-                let checkMobileExist
-                let checkEmailExist
-                const time = moment().unix()
-                if (req.files.profile_image && req.files.profile_image.size > 0) {
-                    image = true
-                    await Helper.imageValidation(req, res, req.files.profile_image)
-                    await Helper.imageSizeValidation(req, res, req.files.profile_image.size)
-                } else {
+                const userId = req.authUserId
+                if (userId === null) {
                     return Response.errorResponseData(
                         res,
-                        res.__('imageIsRequired'),
+                        res.__('invalidId'),
                         Constants.BAD_REQUEST
                     )
-                }
-                const imageName = image ? `${time}${path.extname(req.files.profile_image.name)}` : ''
-
-
-                checkMobileExist = User.findOne({
-                    where: {
-                        mobile: requestParams.mobile,
-                        status: {
-                            [Op.ne]: Constants.DELETE
-                        }
+                } else {
+                    let image = false
+                    if (req.files.profile_image && req.files.profile_image.size > 0) {
+                        image = true
+                        await Helper.imageValidation(req, res, req.files.profile_image)
+                        await Helper.imageSizeValidation(req, res, req.files.profile_image.size)
                     }
-                })
-                checkEmailExist = User.findOne({
-                    where: {
-                        email: requestParams.email,
-                        status: {
-                            [Op.ne]: Constants.DELETE
-                        }
-                    }
-                })
-
-                await checkEmailExist.then(async (emailData) => {
-                    if (emailData) {
-                        const checkUser = await socialAccountCheckByUser(emailData.id, res)
-                        if (!checkUser) {
-                            Response.socialError(res, res.locals.__('EmailAlreadyExist'), Constants.ACCOUNT_TYPE.LOCAL)
-                        }
-                    } else {
-                        await checkMobileExist.then(async (mobData) => {
-                            if (mobData) {
-                                return Response.successResponseWithoutData(
-                                    res,
-                                    res.__('mobileExists'),
-                                    Constants.FAIL
-                                )
-                            } else {
-                                // eslint-disable-next-line no-shadow
-                                const admin = {
-                                    first_name: requestParams.first_name,
-                                    last_name: requestParams.last_name,
-                                    address: requestParams.address,
-                                    email: requestParams.email,
-                                    mobile: requestParams.mobile,
-                                };
-                                User.findOne({
-                                    id: authUserId,
-                                    status: Constants.ACTIVE
-                                })
-                                    .then(async (userData) => {
-                                        let oldImage = null;
-                                        if (userData) {
-                                            if (image) {
-                                                admin.image = imageName;
-                                                oldImage = userData.image;
-                                            } else {
-                                                admin.image = userData.image;
+                    await User
+                        .findOne({
+                            where: {
+                                id: req.authUserId,
+                                status: {
+                                    [Op.ne]: Constants.DELETE
+                                }
+                            }
+                        })
+                        .then(async (profileData) => {
+                            if (profileData) {
+                                const oldImageName = profileData.profile_image
+                                if (profileData.mobile !== requestParams.mobile) {
+                                    await User.findOne({
+                                        where: {
+                                            mobile: requestParams.mobile,
+                                            id: {
+                                                [Op.ne]: req.authUserId
+                                            },
+                                            status: {
+                                                [Op.ne]: Constants.DELETE
                                             }
-
-                                            if (image) {
-                                                const imageUpload = await Helper.uploadImage(
-                                                    imageName,
-                                                    Constants.USER_PROFILE_IMAGE,
-                                                    req,
-                                                    res
-                                                );
-                                                if (imageUpload) {
-                                                    await Helper.removeOldImage(
-                                                        oldImage,
-                                                        Constants.USER_PROFILE_IMAGE
-                                                    );
-                                                }
-                                            }
-                                            Response.successResponseData(res, Constants.SUCCESS, res.__('userProfileUpdated'));
-
                                         }
-                                        else {
-                                            Response.successResponseWithoutData(
+                                    }).then(async (profileDetail) => {
+                                        if (profileDetail) {
+                                            return Response.successResponseWithoutData(
                                                 res,
-                                                res.__('UserNotExist'),
+                                                res.__('NumberAlreadyExist'),
                                                 Constants.FAIL
-                                            );
+                                            )
+                                        } else {
+                                            profileData.new_mobile = requestParams.mobile
+                                            profileData.new_verification_status = Constants.NOT_VERIFIED
+                                            const otp = await Helper.makeRandomDigit(4)
+                                            const otpSent = 200//await Helper.sendOTP(requestParams.country_code, requestParams.mobile, otp)
+                                            if (otpSent === 200) {
+                                                profileData.otp = otp
+                                            } else {
+                                                return Response.errorResponseData(
+                                                    res,
+                                                    res.__('internalError'),
+                                                    Constants.INTERNAL_SERVER
+                                                )
+                                            }
                                         }
+                                        return null
                                     })
-                                    .catch((e) => {
-                                        Response.errorResponseData(
+                                }
+                                profileData.first_name = requestParams.first_name
+                                profileData.last_name = requestParams.last_name
+                                profileData.address = requestParams.address
+                                profileData.email = requestParams.email
+                                profileData.profile_image = image ? `${moment().unix()}${path.extname(req.files.profile_image.name)}` : profileData.profile_image
+                                await profileData
+                                    .save()
+                                    .then(async (result) => {
+                                        if (result) {
+                                            if (image) {
+                                                result.profile_image = Helper.mediaUrl(
+                                                    Constants.USER_PROFILE_IMAGE,
+                                                    result.profile_image
+                                                )
+                                                const imageName = image ? `${moment().unix()}${path.extname(req.files.profile_image.name)}` : ''
+                                                await Helper.uploadImage(req.files.profile_image, Constants.USER_PROFILE_IMAGE, imageName)
+                                                await Helper.removeOldImage(oldImageName, Constants.USER_PROFILE_IMAGE, res)
+                                            } else {
+                                                result.profile_image = Helper.mediaUrl(Constants.USER_PROFILE_IMAGE, profileData.profile_image)
+                                            }
+                                            result.qr_code = Helper.mediaUrl(Constants.USER_QR_CODE, profileData.qr_code)
+                                            return Response.successResponseData(
+                                                res,
+                                                new Transformer.Single(result, Login).parse(),
+                                                Constants.SUCCESS,
+                                                res.__('UserDataUpdatedSuccessfully')
+                                            )
+                                        }
+                                        return null
+                                    })
+                                    .catch((f) => {
+                                        console.log(f)
+                                        return Response.errorResponseData(
                                             res,
                                             res.__('internalError'),
                                             Constants.INTERNAL_SERVER
-                                        );
-                                    });
+                                        )
+                                    })
+                            } else {
+                                return Response.successResponseWithoutData(
+                                    res,
+                                    res.__('UserDoesNotExits'),
+                                    Constants.FAIL
+                                )
                             }
+                            return null
                         })
-                    }
-                })
+                        .catch((e) => {
+                            console.log(e)
+                            return Response.errorResponseData(
+                                res,
+                                res.__('internalError'),
+                                Constants.INTERNAL_SERVER
+                            )
+                        })
+                }
             }
-        });
+        })
     },
 
     /**

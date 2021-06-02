@@ -26,5 +26,12 @@
 	"loginPasswordValidationPasswordRequired": "loginPasswordValidationPasswordRequired",
 	"socialAccNotFoundSignupToContinue": "socialAccNotFoundSignupToContinue",
 	"userRegisterValidationEmailRequired": "userRegisterValidationEmailRequired",
-	"loginPasswordValidationEmailRequired": "loginPasswordValidationEmailRequired"
+	"loginPasswordValidationEmailRequired": "loginPasswordValidationEmailRequired",
+	"authorizationError": "authorizationError",
+	"editProfileValidationEmailEmpty": "editProfileValidationEmailEmpty",
+	"editProfileValidationAddressUnknown": "editProfileValidationAddressUnknown",
+	"editProfileValidationMobileUnknown": "editProfileValidationMobileUnknown",
+	"EmailAlreadyExist": "EmailAlreadyExist",
+	"userRegisterValidationPasswordRequired": "userRegisterValidationPasswordRequired",
+	"UserDataUpdatedSuccessfully": "UserDataUpdatedSuccessfully"
 }

@@ -82,7 +82,9 @@ module.exports = {
     const requestObj = {
       first_name: Joi.string().trim().max(60).optional(),
       last_name: Joi.string().trim().max(60).optional(),
+      address: Joi.string().trim().optional(),
       email: Joi.string().email().optional(),
+      mobile: Joi.number().required(),
       image: Joi.string().allow('').trim().optional()
     };
 
