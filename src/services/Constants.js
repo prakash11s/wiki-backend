@@ -19,8 +19,8 @@ module.exports = {
   CONTACT_US: 1,
 
   USER_PROFILE_IMAGE: 'user/image',
-  PHOTO_IMAGE: 'photo/image',
-  ADDRESS_IMAGE: 'address/image',
+  PHOTO_IMAGE: 'user/kyc/photo-id',
+  ADDRESS_IMAGE: 'user/kyc/address',
   SYMPTOMS_IMAGE: 'symptoms',
   USER_QR_CODE: 'user/qr-code',
   LATEST_UPDATE_IMAGE: 'latest-update',

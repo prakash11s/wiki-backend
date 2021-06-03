@@ -38,5 +38,5 @@ router.post('/verify-user', [maintenanceMode], verifyEmail)
 router.post('/forgot-password', [maintenanceMode], forgotPassword)
 router.post('/change-password', [authMiddleware], changePassword)
 router.post('/edit/profile', formidableMiddleware(), [authMiddleware], editProfile)
-router.post('/add/kyc', [authMiddleware], kycAdd)
+router.post('/add/kyc', formidableMiddleware(), [authMiddleware], kycAdd)
 module.exports = router

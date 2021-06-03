@@ -33,5 +33,9 @@
 	"editProfileValidationMobileUnknown": "editProfileValidationMobileUnknown",
 	"EmailAlreadyExist": "EmailAlreadyExist",
 	"userRegisterValidationPasswordRequired": "userRegisterValidationPasswordRequired",
-	"UserDataUpdatedSuccessfully": "UserDataUpdatedSuccessfully"
+	"UserDataUpdatedSuccessfully": "UserDataUpdatedSuccessfully",
+	"imageIsRequired": "imageIsRequired",
+	"kycValidationPhotoId_imageRequired": "kycValidationPhotoId_imageRequired",
+	"imageInvalid": "imageInvalid",
+	"KYCAddedSuccessfully.": "KYCAddedSuccessfully."
 }

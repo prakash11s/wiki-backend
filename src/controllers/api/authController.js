@@ -7,7 +7,6 @@ const moment = require('moment')
 const {
     userRegisterValidation,
     userLoginValidation,
-    userSocialRegistrationValidation
 } = require('../../services/UserValidation')
 const {
     forgotPasswordValidation,
@@ -18,7 +17,7 @@ const {
     kycValidation
 } = require('../../services/UserValidation')
 const {Login} = require('../../transformers/api/UserTransformer')
-const {User, userSocial, user_kyc} = require('../../models')
+const {User, userSocial, userKYC} = require('../../models')
 const {issueUser} = require('../../services/jwtTokenForUser')
 const {Op} = require('sequelize')
 const QRCode = require('qrcode')
@@ -678,19 +677,10 @@ module.exports = {
         kycValidation(requestParams, res, async (validate) => {
             if (validate) {
                 const time = moment().unix()
-                if (req.files.photo_id_image && req.files.photo_id_image.size > 0) {
+                if (req.files.photo_id_image && req.files.address_image) {
                     image = true
                     await Helper.imageValidation(req, res, req.files.photo_id_image)
                     await Helper.imageSizeValidation(req, res, req.files.photo_id_image.size)
-                } else {
-                    return Response.errorResponseData(
-                        res,
-                        res.__('imageIsRequired'),
-                        Constants.BAD_REQUEST
-                    )
-                }
-                if (req.files.address_image && req.files.address_image.size > 0) {
-                    image = true
                     await Helper.imageValidation(req, res, req.files.address_image)
                     await Helper.imageSizeValidation(req, res, req.files.address_image.size)
                 } else {
@@ -700,8 +690,8 @@ module.exports = {
                         Constants.BAD_REQUEST
                     )
                 }
-                const imageName = image ? `${time}${path.extname(req.files.photo_id_image.name)}` : ''
-                const imageName2 = image ? `${time}${path.extname(req.files.address_image.name)}` : ''
+                const photoIDImage = image ? `${time}${path.extname(req.files.photo_id_image.name)}` : ''
+                const addressImage = image ? `${time}${path.extname(req.files.address_image.name)}` : ''
                 const userKycObj = {
                     firstName: requestParams.firstName,
                     lastName: requestParams.lastName,
@@ -713,25 +703,25 @@ module.exports = {
                 }
                 if(image){
                     userKycObj.photo_id_proof = requestParams.photo_id_proof
-                    userKycObj.photo_id_image = imageName
+                    userKycObj.photo_id_image = photoIDImage
                     userKycObj.address_proof = requestParams.address_proof
-                    userKycObj.address_image = imageName2
+                    userKycObj.address_image = addressImage
                 }
-                await user_kyc.create(userKycObj)
+                await userKYC.create(userKycObj)
                     .then(async (result) => {
                         if (result) {
                             if(image){
-                                await Helper.uploadImage(req.files.photo_id_image, Constants.USER_PROFILE_IMAGE, imageName)
-                                await Helper.uploadImage(req.files.address_proof, Constants.USER_PROFILE_IMAGE, imageName2)
+                                await Helper.uploadImage(req.files.photo_id_image, Constants.PHOTO_IMAGE, photoIDImage)
+                                await Helper.uploadImage(req.files.address_image, Constants.ADDRESS_IMAGE, addressImage)
                             }
                             Response.successResponseWithoutData(
                                 res,
-                                res.__('kyc added successfully.'),
+                                res.__('KYCAddedSuccessfully.'),
                                 Constants.SUCCESS,
                             )
                         }
                     })
-                    .catch(async () => {
+                    .catch(async (e) => {
                         Response.errorResponseData(
                             res,
                             res.__('internalError'),

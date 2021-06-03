@@ -158,6 +158,7 @@ module.exports = {
    * @return {*}
    */
   async uploadImage (file, paths, filename) {
+    console.log(file)
     return new Promise((resolve, reject) => {
       const fs = require('fs-extra')
       const tempPath = file.path

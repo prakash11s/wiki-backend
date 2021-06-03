@@ -3,15 +3,15 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class user_kyc extends Model {
+  class userKYC extends Model {
     static associate(models) {
-      user_kyc.belongsTo(models.User, {
+      userKYC.belongsTo(models.User, {
         sourceKey: 'id',
         foreignKey: 'user_id'
       })
     }
-  };
-  user_kyc.init({
+  }
+  userKYC.init({
     user_id: {
       type: DataTypes.INTEGER,
       references: {
@@ -33,7 +33,8 @@ module.exports = (sequelize, DataTypes) => {
     address_image: DataTypes.STRING,
   }, {
     sequelize,
-    modelName: 'user_kyc',
+    modelName: 'userKYC',
+    tableName: 'user_kyc',
   });
-  return user_kyc;
+  return userKYC;
 };
