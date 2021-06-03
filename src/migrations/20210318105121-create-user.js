@@ -24,6 +24,15 @@ module.exports = {
         type: Sequelize.STRING(100),
         allowNull: false
       },
+      new_email: {
+        type:Sequelize.STRING(100),
+        defaultsTo: ''
+      },
+      email_expiry: {
+        type: Sequelize.DATE,
+        description: '',
+        defaultsTo: null
+      },
       password: {
         type: Sequelize.STRING(100),
         allowNull: false

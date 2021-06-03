@@ -100,5 +100,16 @@ module.exports = {
     }
     return callback(true);
   },
+  checkMobileVerification: (req, res, callback) => {
+    const schema = Joi.object({
+      otp: Joi.string().required(),
+      mobile_number: Joi.string().required(),
+    })
+    const { error } = schema.validate(req);
+    if (error) {
+      Response.validationErrorResponseData(res, res.__(Helper.validationMessageKey('MobileVerification', error)));
+    }
+    return callback(true);
+  },
 
 }

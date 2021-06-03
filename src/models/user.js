@@ -28,6 +28,14 @@ module.exports = (sequelize, DataTypes) => {
     email: {
       type: DataTypes.STRING(100)
     },
+    new_email: {
+      type: DataTypes.STRING(100),
+      defaultsTo: ''
+    },
+    email_expiry: {
+      type: DataTypes.DATE,
+      defaultsTo: null
+    },
     address: {
       type: DataTypes.STRING(200)
     },
@@ -35,10 +43,12 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(100)
     },
     otp: {
-      type: DataTypes.STRING(10)
+      type: DataTypes.STRING(10),
+      defaultsTo: ''
     },
     otp_expiry: {
-      type: DataTypes.DATE
+      type: DataTypes.DATE,
+      defaultsTo: null
     },
     qr_code: {
       type: DataTypes.STRING

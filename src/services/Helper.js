@@ -143,7 +143,6 @@ module.exports = {
   async imageSizeValidation (req, res, image) {
     return new Promise((resolve, reject) => {
       if (image > process.env.MAX_IMG_SIZE) {
-        console.log(process.env.MAX_IMG_SIZE)
         return Response.errorResponseWithoutData(res, res.__('LargeImage'), Constants.BAD_REQUEST)
       }
       return resolve(true)
@@ -158,7 +157,6 @@ module.exports = {
    * @return {*}
    */
   async uploadImage (file, paths, filename) {
-    console.log(file)
     return new Promise((resolve, reject) => {
       const fs = require('fs-extra')
       const tempPath = file.path

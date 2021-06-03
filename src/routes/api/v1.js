@@ -13,6 +13,7 @@ const {
   forgotPassword,
   changePassword,
   editProfile,
+  verifyMobile,
   kycAdd
 } = require('../../controllers/api/authController')
 
@@ -38,5 +39,6 @@ router.post('/verify-user', [maintenanceMode], verifyEmail)
 router.post('/forgot-password', [maintenanceMode], forgotPassword)
 router.post('/change-password', [authMiddleware], changePassword)
 router.post('/edit/profile', formidableMiddleware(), [authMiddleware], editProfile)
+router.post('/verify-mobile', formidableMiddleware(), [authMiddleware], verifyMobile)
 router.post('/add/kyc', formidableMiddleware(), [authMiddleware], kycAdd)
 module.exports = router

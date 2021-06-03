@@ -37,5 +37,6 @@
 	"imageIsRequired": "imageIsRequired",
 	"kycValidationPhotoId_imageRequired": "kycValidationPhotoId_imageRequired",
 	"imageInvalid": "imageInvalid",
-	"KYCAddedSuccessfully.": "KYCAddedSuccessfully."
+	"KYCAddedSuccessfully.": "KYCAddedSuccessfully.",
+	"otpExpired": "otpExpired"
 }

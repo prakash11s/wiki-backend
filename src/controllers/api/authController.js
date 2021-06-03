@@ -14,7 +14,8 @@ const {
 } = require('../../services/AdminValidation')
 const {
     editProfileValidation,
-    kycValidation
+    kycValidation,
+    checkMobileVerification
 } = require('../../services/UserValidation')
 const {Login} = require('../../transformers/api/UserTransformer')
 const {User, userSocial, userKYC} = require('../../models')
@@ -569,7 +570,8 @@ module.exports = {
                         .then(async (profileData) => {
                             if (profileData) {
                                 const oldImageName = profileData.profile_image
-                                if (profileData.mobile !== requestParams.mobile) {
+                                console.log("hello",profileData.mobile !== requestParams.mobile)
+                                if (profileData.mobile !== requestParams.mobile || profileData.email !== requestParams.email) {
                                     await User.findOne({
                                         where: {
                                             mobile: requestParams.mobile,
@@ -590,10 +592,15 @@ module.exports = {
                                         } else {
                                             profileData.new_mobile = requestParams.mobile
                                             profileData.new_verification_status = Constants.NOT_VERIFIED
+                                            const minutesLater = new Date();
+                                            const expiry = minutesLater.setMinutes(minutesLater.getMinutes() + 20);
+                                            profileData.new_email = requestParams.email
+                                            profileData.email_expiry = expiry
                                             const otp = await Helper.makeRandomDigit(4)
                                             const otpSent = 200//await Helper.sendOTP(requestParams.country_code, requestParams.mobile, otp)
                                             if (otpSent === 200) {
                                                 profileData.otp = otp
+                                                profileData.otp_expiry = expiry
                                             } else {
                                                 return Response.errorResponseData(
                                                     res,
@@ -608,7 +615,6 @@ module.exports = {
                                 profileData.first_name = requestParams.first_name
                                 profileData.last_name = requestParams.last_name
                                 profileData.address = requestParams.address
-                                profileData.email = requestParams.email
                                 profileData.profile_image = image ? `${moment().unix()}${path.extname(req.files.profile_image.name)}` : profileData.profile_image
                                 await profileData
                                     .save()
@@ -663,6 +669,63 @@ module.exports = {
                 }
             }
         })
+    },
+
+    /**
+     * @description 'This function is use to verify otp.'
+     * @param req
+     * @param res
+     * @returns {Promise<void>}
+     */
+    verifyMobile: async (req, res) => {
+        const requestParams = req.fields
+        console.log("hello")
+        checkMobileVerification(requestParams, res, async (validate) => {
+            if (validate) {
+                await User.findOne({
+                    where: {
+                        otp: requestParams.otp,
+                        new_mobile: requestParams.mobile_number
+                    }
+                }).then(async (userData) => {
+                    if (userData) {
+                        console.log("hi")
+                        if (userData.status === Constants.ACTIVE) {
+                            if (userData.otp_expiry.getTime() > Date.now()) {
+                                userData.otp_expiry = ''
+                                userData.otp = ''
+                                userData.mobile_number = requestParams.mobile_number
+                                await userData.save().then(() => {
+                                    return Response.successResponseWithoutData(
+                                        res,
+                                        res.__('emailVerifiedSuccessfully'),
+                                        Constants.SUCCESS
+                                    )
+                                }).catch(() => {
+                                    return Response.errorResponseData(
+                                        res,
+                                        res.__('internalError'),
+                                        Constants.INTERNAL_SERVER
+                                    )
+                                })
+                            } else {
+                                Response.successResponseWithoutData(res, res.__('otpExpired'), Constants.FAIL);
+                            }
+                        } else {
+                            Response.successResponseWithoutData(res, res.__('accountInactive'), Constants.FAIL);
+                        }
+                    }
+                }).catch(() => {
+                    return Response.errorResponseData(
+                        res,
+                        res.__('internalError'),
+                        Constants.INTERNAL_SERVER
+                    )
+                })
+            } else {
+                Response.errorResponseData(res, res.__('error'), Constants.INTERNAL_SERVER);
+            }
+        });
     },
 
     /**
