@@ -1,9 +1,6 @@
 var nodemailer = require('nodemailer');
 var Email = require('email-templates');
-const Helpers = require('./Helpers');
-const sgMail = require('@sendgrid/mail');
-
-sgMail.setApiKey('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');
+const Helpers = require('./Helper');
 
 module.exports = {
   configOption: Helpers.mailConfig,

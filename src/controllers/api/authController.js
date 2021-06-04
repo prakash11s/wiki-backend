@@ -580,6 +580,7 @@ module.exports = {
                         })
                         .then(async (profileData) => {
                             if (profileData) {
+                                const otp = await Helper.makeRandomDigit(4)
                                 const oldImageName = profileData.profile_image
                                 console.log("hello",profileData.mobile !== requestParams.mobile)
                                 if (profileData.mobile !== requestParams.mobile || profileData.email !== requestParams.email) {
@@ -607,7 +608,6 @@ module.exports = {
                                             const expiry = minutesLater.setMinutes(minutesLater.getMinutes() + 20);
                                             profileData.new_email = requestParams.email
                                             profileData.email_expiry = expiry
-                                            const otp = await Helper.makeRandomDigit(4)
                                             const otpSent = 200//await Helper.sendOTP(requestParams.country_code, requestParams.mobile, otp)
                                             if (otpSent === 200) {
                                                 profileData.otp = otp
@@ -637,15 +637,14 @@ module.exports = {
                                                     result.profile_image
                                                 )
                                                 const locals = {
-                                                    username: admin.first_name,
-                                                    appName: Helpers.AppName,
-                                                    verification_code: verificationCode,
-                                                    link: `${process.env.ADMIN_URL}/reset-mobile-email?otp=${verificationCode}`
+                                                    appName: Helper.AppName,
+                                                    verification_code: otp,
+                                                    link: `${process.env.API_URL}/reset-mobile-email?otp=${otp}`
                                                 };
                                                 const imageName = image ? `${moment().unix()}${path.extname(req.files.profile_image.name)}` : ''
                                                 await Helper.uploadImage(req.files.profile_image, Constants.USER_PROFILE_IMAGE, imageName)
                                                 await Helper.removeOldImage(oldImageName, Constants.USER_PROFILE_IMAGE, res)
-                                                await Mailer.sendMail(requestParams.email, 'Reset Your Odyssey mobile/email', Helpers.forgotTemplate, locals);
+                                                await Mailer.sendMail(requestParams.email, 'Reset Your Odyssey mobile/email', Helper.welcomeTemplate, locals);
                                             } else {
                                                 result.profile_image = Helper.mediaUrl(Constants.USER_PROFILE_IMAGE, profileData.profile_image)
                                             }
