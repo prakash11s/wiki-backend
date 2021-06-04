@@ -60,7 +60,8 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER
     },
     new_mobile: {
-      type: DataTypes.STRING(20)
+      type: DataTypes.STRING(20),
+      defaultsTo: ''
     },
     new_verification_status: {
       type: DataTypes.INTEGER

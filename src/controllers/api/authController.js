@@ -15,7 +15,8 @@ const {
 const {
     editProfileValidation,
     kycValidation,
-    checkMobileVerification
+    checkMobileVerification,
+    checkEmailVerification
 } = require('../../services/UserValidation')
 const {Login} = require('../../transformers/api/UserTransformer')
 const {User, userSocial, userKYC} = require('../../models')
@@ -277,44 +278,54 @@ module.exports = {
      */
     verifyEmail: async (req, res) => {
         const requestParams = req.fields
-        await User.findOne({
-            where: {
-                email: requestParams.email,
-            }
-        }).then(async (userData) => {
-            if (userData) {
-                if (userData.otp === requestParams.otp) {
-                    userData.verification_status = Constants.VERIFIED
-                    await userData.save().then(() => {
-                        return Response.successResponseWithoutData(
-                            res,
-                            res.__('emailVerifiedSuccessfully'),
-                            Constants.SUCCESS
-                        )
-                    }).catch(() => {
-                        return Response.errorResponseData(
-                            res,
-                            res.__('internalError'),
-                            Constants.INTERNAL_SERVER
-                        )
-                    })
-                } else {
-                    return Response.successResponseWithoutData(
+        console.log("hello")
+        checkEmailVerification(requestParams, res, async (validate) => {
+            if (validate) {
+                await User.findOne({
+                    where: {
+                        otp: requestParams.otp,
+                        new_email: requestParams.email
+                    }
+                }).then(async (userData) => {
+                    if (userData) {
+                        console.log("hi")
+                        if (userData.status === Constants.ACTIVE) {
+                            if (userData.email_expiry.getTime() > Date.now()) {
+                                userData.email_expiry = ''
+                                userData.otp = ''
+                                userData.email = requestParams.email
+                                await userData.save().then(() => {
+                                    return Response.successResponseWithoutData(
+                                        res,
+                                        res.__('emailVerifiedSuccessfully'),
+                                        Constants.SUCCESS
+                                    )
+                                }).catch(() => {
+                                    return Response.errorResponseData(
+                                        res,
+                                        res.__('internalError'),
+                                        Constants.INTERNAL_SERVER
+                                    )
+                                })
+                            } else {
+                                Response.successResponseWithoutData(res, res.__('otpExpired'), Constants.FAIL);
+                            }
+                        } else {
+                            Response.successResponseWithoutData(res, res.__('accountInactive'), Constants.FAIL);
+                        }
+                    }
+                }).catch(() => {
+                    return Response.errorResponseData(
                         res,
-                        res.__('invalidOTPorEmail'),
-                        Constants.FAIL
+                        res.__('internalError'),
+                        Constants.INTERNAL_SERVER
                     )
-                }
+                })
+            } else {
+                Response.errorResponseData(res, res.__('error'), Constants.INTERNAL_SERVER);
             }
-        }).catch(() => {
-            return Response.errorResponseData(
-                res,
-                res.__('internalError'),
-                Constants.INTERNAL_SERVER
-            )
-        })
+        });
     },
-
 
     /**
      * @description This function is for User Forgot Password.
@@ -625,9 +636,16 @@ module.exports = {
                                                     Constants.USER_PROFILE_IMAGE,
                                                     result.profile_image
                                                 )
+                                                const locals = {
+                                                    username: admin.first_name,
+                                                    appName: Helpers.AppName,
+                                                    verification_code: verificationCode,
+                                                    link: `${process.env.ADMIN_URL}/reset-mobile-email?otp=${verificationCode}`
+                                                };
                                                 const imageName = image ? `${moment().unix()}${path.extname(req.files.profile_image.name)}` : ''
                                                 await Helper.uploadImage(req.files.profile_image, Constants.USER_PROFILE_IMAGE, imageName)
                                                 await Helper.removeOldImage(oldImageName, Constants.USER_PROFILE_IMAGE, res)
+                                                await Mailer.sendMail(requestParams.email, 'Reset Your Odyssey mobile/email', Helpers.forgotTemplate, locals);
                                             } else {
                                                 result.profile_image = Helper.mediaUrl(Constants.USER_PROFILE_IMAGE, profileData.profile_image)
                                             }
@@ -698,7 +716,7 @@ module.exports = {
                                 await userData.save().then(() => {
                                     return Response.successResponseWithoutData(
                                         res,
-                                        res.__('emailVerifiedSuccessfully'),
+                                        res.__('mobileVerifiedSuccessfully'),
                                         Constants.SUCCESS
                                     )
                                 }).catch(() => {
