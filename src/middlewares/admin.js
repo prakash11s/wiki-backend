@@ -19,56 +19,56 @@ module.exports = {
           if (err) {
             Response.errorResponseData(res, res.locals.__('invalidToken'), 401)
           }
-          console.log('decode', decoded)
           if (decoded.id) {
             req.authUserId = decoded.id
+            req.type = decoded.type
             // eslint-disable-next-line consistent-return
             Admin.findOne({
               where: {
-                id: req.authUserId
-              }
+                id: req.authUserId,
+              },
             }).then(async (result) => {
               if (!result) {
                 return Response.errorResponseData(
-                  res,
-                  res.locals.__('invalidToken'),
-                  401
+                    res,
+                    res.locals.__('invalidToken'),
+                    401
                 )
               } else {
                 if (result && result.status === INACTIVE) {
                   return Response.errorResponseData(
-                    res,
-                    res.locals.__('accountIsInactive'),
-                    401
+                      res,
+                      res.locals.__('accountIsInactive'),
+                      401
                   )
                 }
                 if (result && result.status === ACTIVE) {
                   return next()
                 } else {
                   return Response.errorResponseData(
-                    res,
-                    res.locals.__('accountBlocked'),
-                    401
+                      res,
+                      res.locals.__('accountBlocked'),
+                      401
                   )
                 }
               }
             })
           } else {
             return Response.errorResponseData(
-              res,
-              res.locals.__('invalidToken'),
-              401
+                res,
+                res.locals.__('invalidToken'),
+                401
             )
           }
         })
       } else {
         return Response.errorResponseData(
-          res,
-          res.locals.__('invalidToken'),
-          401
+            res,
+            res.locals.__('invalidToken'),
+            401
         )
       }
     }
     return null
-  }
+  },
 }
