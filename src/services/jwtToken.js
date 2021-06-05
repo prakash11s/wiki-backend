@@ -3,8 +3,10 @@ const jwt = require('jsonwebtoken')
 // Generates an admin token
 module.exports.issueAdmin = function (payload) {
   return jwt.sign({
+    id: payload.id,
+    type: payload.type,
     exp: payload.exp,
-    id: payload.id
+
   }, process.env.JWT_SECRETKEY, { algorithm: 'HS512' })
 }
 

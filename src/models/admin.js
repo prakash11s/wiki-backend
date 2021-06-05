@@ -9,6 +9,11 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true,
       primaryKey: true
     },
+    type: {
+      type: DataTypes.INTEGER,
+      defaultValue: '2',
+      comment: '1:super-admin,2:sub-admin',
+    },
     name: DataTypes.STRING(50),
     email: {
       type: DataTypes.STRING(150),

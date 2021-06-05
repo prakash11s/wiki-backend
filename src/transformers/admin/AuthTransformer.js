@@ -1,7 +1,8 @@
 module.exports = {
   login: {
     name: 'name',
-    email: 'email'
+    email: 'email',
+    type: 'type'
   }
 
 }

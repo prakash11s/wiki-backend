@@ -20,12 +20,12 @@ module.exports = {
             Response.errorResponseData(res, res.locals.__('invalidToken'), 401)
           }
           if (decoded.id) {
-            req.authUserId = decoded.id
+            req.authAdminId = decoded.id
             req.type = decoded.type
             // eslint-disable-next-line consistent-return
             Admin.findOne({
               where: {
-                id: req.authUserId,
+                id: req.authAdminId,
               },
             }).then(async (result) => {
               if (!result) {

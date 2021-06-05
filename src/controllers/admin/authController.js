@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const Transformer = require('object-transformer')
 const Response = require('../../services/Response')
 const Constants = require('../../services/Constants')
@@ -35,6 +35,7 @@ module.exports = {
         }).then(
           (admin) => {
             if (admin) {
+              console.log('admin',admin)
               if (admin.status === Constants.ACTIVE) {
                 bcrypt.compare(
                   reqParam.password,
@@ -62,11 +63,18 @@ module.exports = {
                         }
                       }
                       const superAdminExpTime =
-                        Math.floor(Date.now() / 1000) +
-                        60 * 60 * 24 * process.env.SUPER_ADMIN_TOKEN_EXP
+                          Math.floor(Date.now() / 1000) +
+                          60 * 60 * 24 * process.env.SUPER_ADMIN_TOKEN_EXP
+                      const subAdminExpTime =
+                          Math.floor(Date.now() / 1000) +
+                          60 * 60 * 24 * process.env.SUB_ADMIN_TOKEN_EXP
                       const payload = {
                         id: admin.id,
-                        exp: superAdminExpTime
+                        type: admin.type,
+                        exp:
+                            admin.type === Constants.SUPER_ADMIN
+                                ? superAdminExpTime
+                                : subAdminExpTime,
                       }
                       const token = issueAdmin(payload)
                       const meta = { token }
