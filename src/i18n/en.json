@@ -38,5 +38,8 @@
 	"kycValidationPhotoId_imageRequired": "kycValidationPhotoId_imageRequired",
 	"imageInvalid": "imageInvalid",
 	"KYCAddedSuccessfully.": "KYCAddedSuccessfully.",
-	"otpExpired": "otpExpired"
+	"otpExpired": "otpExpired",
+	"MobileVerificationMobileNumberRequired": "MobileVerificationMobileNumberRequired",
+	"invalidOTPorEmail": "invalidOTPorEmail",
+	"MobileVerificationOtpEmpty": "MobileVerificationOtpEmpty"
 }

@@ -278,7 +278,6 @@ module.exports = {
      */
     verifyEmail: async (req, res) => {
         const requestParams = req.fields
-        console.log("hello")
         checkEmailVerification(requestParams, res, async (validate) => {
             if (validate) {
                 await User.findOne({
@@ -288,7 +287,6 @@ module.exports = {
                     }
                 }).then(async (userData) => {
                     if (userData) {
-                        console.log("hi")
                         if (userData.status === Constants.ACTIVE) {
                             if (userData.email_expiry.getTime() > Date.now()) {
                                 userData.email_expiry = ''
@@ -308,11 +306,23 @@ module.exports = {
                                     )
                                 })
                             } else {
-                                Response.successResponseWithoutData(res, res.__('otpExpired'), Constants.FAIL);
+                                Response.successResponseWithoutData(
+                                    res, res.__('otpExpired'),
+                                    Constants.FAIL
+                                );
                             }
                         } else {
-                            Response.successResponseWithoutData(res, res.__('accountInactive'), Constants.FAIL);
+                            Response.successResponseWithoutData(
+                                res, res.__('accountInactive'),
+                                Constants.FAIL
+                            );
                         }
+                    }else{
+                        return Response.successResponseWithoutData(
+                            res,
+                            res.__('invalidOTPorEmail'),
+                            Constants.FAIL
+                        )
                     }
                 }).catch(() => {
                     return Response.errorResponseData(
@@ -696,7 +706,6 @@ module.exports = {
      */
     verifyMobile: async (req, res) => {
         const requestParams = req.fields
-        console.log("hello")
         checkMobileVerification(requestParams, res, async (validate) => {
             if (validate) {
                 await User.findOne({
@@ -706,12 +715,12 @@ module.exports = {
                     }
                 }).then(async (userData) => {
                     if (userData) {
-                        console.log("hi")
                         if (userData.status === Constants.ACTIVE) {
                             if (userData.otp_expiry.getTime() > Date.now()) {
                                 userData.otp_expiry = ''
                                 userData.otp = ''
                                 userData.mobile_number = requestParams.mobile_number
+                                userData.verification_status = Constants.VERIFIED
                                 await userData.save().then(() => {
                                     return Response.successResponseWithoutData(
                                         res,

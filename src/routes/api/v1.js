@@ -35,7 +35,7 @@ const authMiddlewareWithoutFormidable = (() => {
 
 router.post('/registration', formidableMiddleware(), [maintenanceMode], userRegistration)
 router.post('/login', [maintenanceMode], login)
-router.post('/verify-user', [maintenanceMode], verifyEmail)
+router.post('/verify-new-email', formidableMiddleware(), [maintenanceMode], verifyEmail)
 router.post('/forgot-password', [maintenanceMode], forgotPassword)
 router.post('/change-password', [authMiddleware], changePassword)
 router.post('/edit/profile', formidableMiddleware(), [authMiddleware], editProfile)
