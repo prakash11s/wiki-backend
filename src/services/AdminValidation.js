@@ -279,4 +279,82 @@ module.exports = {
     return callback(true)
   },
 
+  addEditValidationForSubAdmin: (req, res, callback) => {
+    const requestObj = {
+      id: Joi.string().optional(),
+      name: Joi.string().trim().required(),
+      email: Joi.string().trim().email().max(150)
+          .required(),
+      status: Joi.number()
+          .valid(Constants.ACTIVE, Constants.INACTIVE)
+          .required(),
+      password: Joi.string().trim().min(6)
+          .regex(/^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9!@#$%^&*]{6,}$/)
+          .required()
+    };
+
+    const schema = Joi.object(requestObj);
+    const { error } = schema.validate(req);
+    if (error) {
+      return Response.validationErrorResponseData(
+          res,
+          res.__(Helper.validationMessageKey('addEditAdminValidation', error))
+      );
+    }
+    return callback(true);
+  },
+
+  subAdminChangeStatusValidation: (req, res, callback) => {
+    const schema = Joi.object().keys({
+      status: Joi.number()
+          .valid(Constants.ACTIVE, Constants.INACTIVE, Constants.DELETE)
+          .required(),
+      id: Joi.number().required(),
+    });
+    const { error } = schema.validate(req);
+    if (error) {
+      return Response.validationErrorResponseData(
+          res,
+          res.__(Helper.validationMessageKey('subAdminUpdateStatus', error))
+      );
+    }
+    return callback(true);
+  },
+
+  userChangeStatusValidation: (req, res, callback) => {
+    const schema = Joi.object().keys({
+      status: Joi.number()
+          .valid(Constants.ACTIVE, Constants.INACTIVE,  Constants.DELETE)
+          .required(),
+      id: Joi.number().required()
+    });
+    const { error } = schema.validate(req);
+    if (error) {
+      return Response.validationErrorResponseData(
+          res,
+          res.__(Helper.validationMessageKey('userUpdateStatus', error))
+      );
+    }
+    return callback(true);
+  },
+
+  addEditValidationForUser: (req, res, callback) => {
+    const schema = Joi.object({
+      id: Joi.string().optional(),
+      name: Joi.string().max(100).trim().required(),
+      email: Joi.string().max(100).trim().required(),
+      mobile: Joi.string().min(5).max(15).required(),
+      gender: Joi.number().valid(GENDER.MALE, GENDER.FEMALE, GENDER.OTHER).required(),
+      platform: Joi.number().valid(PLATFORM.WEBSITE, PLATFORM.ANDRIOD, PLATFORM.IOS)
+    });
+    const { error } = schema.validate(req);
+    if (error) {
+      return Response.validationErrorResponseData(
+          res,
+          res.__(Helper.validationMessageKey('addEditUserValidation', error))
+      );
+    }
+    return callback(true);
+  },
+
 }

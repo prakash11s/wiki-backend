@@ -41,5 +41,16 @@
 	"otpExpired": "otpExpired",
 	"MobileVerificationMobileNumberRequired": "MobileVerificationMobileNumberRequired",
 	"invalidOTPorEmail": "invalidOTPorEmail",
-	"MobileVerificationOtpEmpty": "MobileVerificationOtpEmpty"
+	"MobileVerificationOtpEmpty": "MobileVerificationOtpEmpty",
+	"subAdminCreated": "subAdminCreated",
+	"subAdminUpdated": "subAdminUpdated",
+	"success": "success",
+	"SubAdminStatusActivated": "SubAdminStatusActivated",
+	"subAdminUpdateStatusStatusOnly": "subAdminUpdateStatusStatusOnly",
+	"SubAdminStatusDeleted": "SubAdminStatusDeleted",
+	"SubAdminStatusDeactivated": "SubAdminStatusDeactivated",
+	"noDataFound": "noDataFound",
+	"UserStatusActivated": "UserStatusActivated",
+	"UserStatusDeactivated": "UserStatusDeactivated",
+	"UserDeleted": "UserDeleted"
 }

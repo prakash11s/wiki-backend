@@ -9,6 +9,15 @@ const {
   forgotPassword,
   changePassword
 } = require('../../controllers/admin/authController')
+const {
+  subAdminAddEdit,
+  subAdminList,
+  subAdminDetail,
+  subAdminUpdateStatus,
+} = require('../../controllers/admin/SubAdminController');
+const {
+  userList, userUpdateStatus,  userDetail
+} = require('../../controllers/admin/UserController');
 
 const authMiddleware = (() => {
   const chain = connect()
@@ -18,8 +27,20 @@ const authMiddleware = (() => {
   return chain
 })()
 
+// LRF
 router.post('/login', formidableMiddleware(), login)
 router.post('/forgot-password', formidableMiddleware(), forgotPassword)
 router.post('/change-password', authMiddleware, changePassword)
+
+// sub-admin
+router.post('/sub-admin', formidableMiddleware(), authMiddleware, subAdminAddEdit);
+router.get('/sub-admin', formidableMiddleware(), authMiddleware, subAdminList);
+router.get('/sub-admin/:id', formidableMiddleware(), authMiddleware, subAdminDetail);
+router.post('/sub-admin-update-status', formidableMiddleware(), authMiddleware, subAdminUpdateStatus);
+
+// user
+router.get('/user', formidableMiddleware(), authMiddleware, userList);
+router.post('/user-status', formidableMiddleware(), authMiddleware, userUpdateStatus);
+router.get('/user-detail/:id', formidableMiddleware(), authMiddleware,  userDetail);
 
 module.exports = router
