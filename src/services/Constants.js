@@ -19,13 +19,9 @@ module.exports = {
   TERMS_AND_CONDITIONS: 1,
   PRIVACY_POLICY: 2,
   CONTACT_US: 1,
-
   USER_PROFILE_IMAGE: 'user/image',
   PHOTO_IMAGE: 'user/kyc/photo-id',
   ADDRESS_IMAGE: 'user/kyc/address',
-  SYMPTOMS_IMAGE: 'symptoms',
-  USER_QR_CODE: 'user/qr-code',
-  LATEST_UPDATE_IMAGE: 'latest-update',
   ADD_TOKEN: 1,
   REMOVE_TOKEN: 2,
   GENDER_MALE: 1,
@@ -43,6 +39,5 @@ module.exports = {
     LOCAL : 1,
     GOOGLE: 2,
     FACEBOOK : 3
-
   }
 }

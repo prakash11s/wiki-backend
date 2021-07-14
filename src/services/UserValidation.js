@@ -100,25 +100,38 @@ module.exports = {
     }
     return callback(true);
   },
-  checkMobileVerification: (req, res, callback) => {
+  verifyNewMobileValidation: (req, res, callback) => {
     const schema = Joi.object({
       otp: Joi.string().required(),
       mobile_number: Joi.string().required(),
     })
     const { error } = schema.validate(req);
     if (error) {
-      Response.validationErrorResponseData(res, res.__(Helper.validationMessageKey('MobileVerification', error)));
+      Response.validationErrorResponseData(res, res.__(Helper.validationMessageKey('verifyNewMobileValidation', error)));
     }
     return callback(true);
   },
-  checkEmailVerification: (req, res, callback) => {
+
+  verifyNewEmailValidation: (req, res, callback) => {
     const schema = Joi.object({
       otp: Joi.string().required(),
      email: Joi.string().required(),
     })
     const { error } = schema.validate(req);
     if (error) {
-      Response.validationErrorResponseData(res, res.__(Helper.validationMessageKey('MobileVerification', error)));
+      Response.validationErrorResponseData(res, res.__(Helper.validationMessageKey('verifyNewEmailValidation', error)));
+    }
+    return callback(true);
+  },
+
+  emailVerificationValidation: (req, res, callback) => {
+    const schema = Joi.object({
+      otp: Joi.string().required(),
+      email: Joi.string().required(),
+    })
+    const { error } = schema.validate(req);
+    if (error) {
+      Response.validationErrorResponseData(res, res.__(Helper.validationMessageKey('emailVerification', error)));
     }
     return callback(true);
   },

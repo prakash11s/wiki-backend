@@ -6,7 +6,6 @@ module.exports = {
     email: 'email',
     address: 'address',
     mobile: 'mobile',
-    qr_code: 'qr_code',
     profile_image: 'profile_image',
     verification_status: 'verification_status',
     status: 'status',
@@ -25,7 +24,6 @@ module.exports = {
     passport_number: 'passport_number',
     current_health_status: 'current_health_status',
     unique_code: 'unique_code',
-    qr_code: 'qr_code',
     verification_status: 'verification_status',
     status: 'status',
     createdAt: 'createdAt',
@@ -45,7 +43,6 @@ module.exports = {
     mobile: 'mobile',
     current_health_status: 'current_health_status',
     unique_code: 'unique_code',
-    qr_code: 'qr_code',
     country: 'country',
     passport_number: 'passport_number',
     verification_status: 'verification_status',
@@ -67,7 +64,6 @@ module.exports = {
     mobile: 'mobile',
     current_health_status: 'current_health_status',
     unique_code: 'unique_code',
-    qr_code: 'qr_code',
     country: 'country',
     passport_number: 'passport_number',
     verification_status: 'verification_status',
@@ -83,7 +79,6 @@ module.exports = {
 
   userCurrentHealthStatus: {
     id: 'id',
-    qr_code: 'qr_code',
     current_health_status: 'current_health_status',
     current_health_title: 'current_health_title',
     bgColor: 'bgColor',
@@ -95,7 +90,6 @@ module.exports = {
   },
   dashboard: {
     id: 'id',
-    qr_code: 'qr_code',
     current_health_status: 'current_health_status',
     current_health_title: 'current_health_title',
     bgColor: 'bgColor',

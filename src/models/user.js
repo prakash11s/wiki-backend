@@ -1,4 +1,5 @@
 const { Model } = require('sequelize')
+const Constants = require('../services/Constants')
 
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
@@ -50,14 +51,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       defaultsTo: null
     },
-    qr_code: {
-      type: DataTypes.STRING
-    },
     profile_image: {
       type: DataTypes.STRING(50)
     },
     verification_status: {
-      type: DataTypes.INTEGER
+      type: DataTypes.INTEGER,
+      defaultsTo: Constants.NOT_VERIFIED
+    },
+    email_verification_status: {
+      type: DataTypes.INTEGER,
+      defaultsTo: Constants.NOT_VERIFIED
     },
     new_mobile: {
       type: DataTypes.STRING(20),

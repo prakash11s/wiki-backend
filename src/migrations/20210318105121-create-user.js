@@ -49,10 +49,6 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: true
       },
-      qr_code: {
-        type: Sequelize.STRING,
-        allowNull: true
-      },
       profile_image: {
         type: Sequelize.STRING(50),
         allowNull: true

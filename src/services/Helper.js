@@ -13,6 +13,7 @@ module.exports = {
   userForgotTemplate: 'userForgotPassword',
   newPasswordTemplate: 'newPassword',
   welcomeTemplate: 'welcomeMessage',
+  emailVerificationMail: 'emailVerification',
   toUpperCase: (str) => {
     if (str.length > 0) {
       const newStr = str.toLowerCase()

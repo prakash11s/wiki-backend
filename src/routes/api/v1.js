@@ -9,11 +9,11 @@ const {
 const {
   userRegistration,
   login,
-  verifyEmail,
+  verifyNewEmail,
   forgotPassword,
   changePassword,
   editProfile,
-  verifyMobile,
+  verifyNewMobile,
   kycAdd
 } = require('../../controllers/api/authController')
 
@@ -35,10 +35,10 @@ const authMiddlewareWithoutFormidable = (() => {
 
 router.post('/registration', formidableMiddleware(), [maintenanceMode], userRegistration)
 router.post('/login', [maintenanceMode], login)
-router.post('/verify-new-email', formidableMiddleware(), [maintenanceMode], verifyEmail)
+router.post('/verify-new-email', formidableMiddleware(), [maintenanceMode], verifyNewEmail)
 router.post('/forgot-password', [maintenanceMode], forgotPassword)
 router.post('/change-password', [authMiddleware], changePassword)
 router.post('/edit/profile', formidableMiddleware(), [authMiddleware], editProfile)
-router.post('/verify-mobile', formidableMiddleware(), [authMiddleware], verifyMobile)
+router.post('/verify-new-mobile', formidableMiddleware(), [authMiddleware], verifyNewMobile)
 router.post('/add/kyc', formidableMiddleware(), [authMiddleware], kycAdd)
 module.exports = router
