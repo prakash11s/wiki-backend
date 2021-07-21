@@ -38,25 +38,12 @@ module.exports = {
      * @param res
      */
     userRegistration: async (req, res) => {
-        const requestParams = req.fields
+        const requestParams = req.body
         let image = false
         userRegisterValidation(requestParams, res, async (validate) => {
             if (validate) {
                 let checkMobileExist
                 let checkEmailExist
-                const time = moment().unix()
-                if (req.files.profile_image && req.files.profile_image.size > 0) {
-                    image = true
-                    await Helper.imageValidation(req, res, req.files.profile_image)
-                    await Helper.imageSizeValidation(req, res, req.files.profile_image.size)
-                } else {
-                    return Response.errorResponseData(
-                        res,
-                        res.__('imageIsRequired'),
-                        Constants.BAD_REQUEST
-                    )
-                }
-                const imageName = image ? `${time}${path.extname(req.files.profile_image.name)}` : ''
                 checkMobileExist = User.findOne({
                     where: {
                         mobile: requestParams.mobile,
@@ -73,16 +60,18 @@ module.exports = {
                         }
                     }
                 })
-                if (requestParams.provider_data) {
-                    for (const property in requestParams.provider_data) {
-                        await checkSocialID(requestParams.provider_data[property], res)
+                if (requestParams.social_data) {
+                    let social_id
+                    for (const property in requestParams.social_data.auth_id) {
+                        social_id = requestParams.social_data.auth_id[property]
                     }
+                    await checkSocialID(social_id, res)
                 }
                 await checkEmailExist.then(async (emailData) => {
                     if (emailData) {
                         const checkUser = await socialAccountCheckByUser(emailData.id, res)
                         if (!checkUser) {
-                            Response.socialError(res, res.locals.__('AccountAlreadyExist'), Constants.ACCOUNT_TYPE.LOCAL)
+                            return Response.socialError(res, res.locals.__('AccountAlreadyExist'), Constants.ACCOUNT_TYPE.LOCAL)
                         }
                     } else {
                         await checkMobileExist.then(async (mobData) => {
@@ -93,27 +82,31 @@ module.exports = {
                                     Constants.FAIL
                                 )
                             } else {
-                                const otp = await Helper.makeRandomDigit(4)
+                                const mobile_otp = await Helper.makeRandomDigit(4)
+                                const email_otp = await Helper.makeRandomDigit(6)
                                 const pass = await bcrypt.hash(requestParams.password, 10)
                                 const minutesLater = new Date()
-                                const otpTokenExpire = minutesLater.setMinutes(minutesLater.getMinutes() + 20)
+                                const emailExpiry = minutesLater.setMinutes(minutesLater.getMinutes() + 30)
+                                const mobileExpiry = minutesLater.setMinutes(minutesLater.getMinutes() + 15)
                                 const UserObj = {
                                     first_name: requestParams.first_name,
                                     last_name: requestParams.last_name,
                                     email: requestParams.email,
                                     password: pass,
-                                    address: requestParams.address,
                                     mobile: requestParams.mobile,
-                                    otp,
-                                    otp_expiry: otpTokenExpire,
-                                    profile_image: imageName
+                                    mobile_otp,
+                                    email_otp,
+                                    mobile_otp_expiry: mobileExpiry,
+                                    email_otp_expiry: emailExpiry,
                                 }
-                                if (!requestParams.provider_data) {
+                                //TODO: SEND_OTP
+                                if (!requestParams.social_data) {
+                                    console.log("LLLLL")
                                     const locals = {
                                         username: requestParams.first_name,
                                         appName: Helper.AppName,
                                         email: requestParams.email,
-                                        otp: otp,
+                                        otp: email_otp,
                                     }
                                     try {
                                         const mail = await Mailer.sendMail(requestParams.email, 'Email Verification', Helper.emailVerificationMail, locals)
@@ -129,29 +122,25 @@ module.exports = {
                                         )
                                     }
                                 }
-                                await User.create(UserObj)
-                                    .then(async (result) => {
-                                        if (result) {
-                                            if (image) {
-                                                await Helper.uploadImage(req.files.profile_image, Constants.USER_PROFILE_IMAGE, imageName)
-                                            }
-                                            if (requestParams.provider_data) {
-                                                const userSocialAuthMeta = await getSocialAuthType(requestParams, result)
-                                                await userSocial.create(userSocialAuthMeta)
-                                            }
-                                            return Response.successResponseWithoutData(
-                                                res,
-                                                res.__('userRegistrationSuccessful'),
-                                                Constants.SUCCESS
-                                            )
+                                await User.create(UserObj).then(async (result) => {
+                                    if (result) {
+                                        if (requestParams.social_data) {
+                                            const userSocialAuthMeta = await getSocialAuthType(requestParams, result)
+                                            await userSocial.create(userSocialAuthMeta)
                                         }
-                                    }).catch((e) => {
-                                        return Response.errorResponseData(
+                                        return Response.successResponseWithoutData(
                                             res,
-                                            res.__('internalError'),
-                                            Constants.INTERNAL_SERVER
+                                            res.__('userRegistrationSuccessful'),
+                                            Constants.SUCCESS
                                         )
-                                    })
+                                    }
+                                }).catch((e) => {
+                                    return Response.errorResponseData(
+                                        res,
+                                        res.__('internalError'),
+                                        Constants.INTERNAL_SERVER
+                                    )
+                                })
                             }
                         })
                     }
@@ -166,7 +155,7 @@ module.exports = {
      * @param req
      * @param res
      */
-    emailVerification: async (req, res) => {
+    userEmailVerification: async (req, res) => {
         const requestParams = req.body;
         emailVerificationValidation(requestParams, res, async (validate) => {
             if (validate) {
@@ -177,12 +166,11 @@ module.exports = {
                     }
                 }).then((tokenExists) => {
                     if (tokenExists) {
-                        if (parseInt(requestParams.otp) === parseInt(tokenExists.otp)) {
-                            if (tokenExists.otp_expiry > Date.now()) {
-                                if (tokenExists.email_verification_status === Constants.NOT_VERIFIED) {
+                        if (parseInt(requestParams.otp) === parseInt(tokenExists.email_otp)) {
+                            if (tokenExists.emai_otp_expiry > Date.now()) {
+                                if (tokenExists.is_email_verified === Constants.NOT_VERIFIED) {
                                     const Verification = {
                                         is_email_verified: Constants.VERIFIED,
-                                        status: Constants.ACTIVE
                                     };
                                     User.update(Verification,
                                         {
@@ -191,13 +179,13 @@ module.exports = {
                                             }
                                         }).then(async (update) => {
                                         if (update) {
-                                                return Response.successResponseData(res, null, Constants.SUCCESS, res.locals.__('verificationSuccess'));
+                                            return Response.successResponseData(res, null, Constants.SUCCESS, res.locals.__('verificationSuccess'));
                                         } else {
                                             Response.errorResponseData(res, res.locals.__('somethingWentWrong'), FAIL);
                                         }
                                     });
                                 } else {
-                                    Response.successResponseWithoutData(res, res.locals.__('accountAlreadyVerified'), Constants.FAIL);
+                                    Response.successResponseWithoutData(res, res.locals.__('emailAlreadyVerified'), Constants.FAIL);
                                 }
                             } else {
                                 Response.successResponseWithoutData(res, res.locals.__('otpExpired'), Constants.FAIL);
@@ -214,6 +202,61 @@ module.exports = {
             }
         });
     },
+
+
+    /**
+     * @description "This function is for Mobile-Verification."
+     * @param req
+     * @param res
+     */
+    userMobileVerification: async (req, res) => {
+        const requestParams = req.body;
+        mobileVerificationValidation(requestParams, res, async (validate) => {
+            if (validate) {
+                User.findOne({
+                    where: {
+                        email: requestParams.email,
+                        status: {$ne: Constants.DELETE}
+                    }
+                }).then((tokenExists) => {
+                    if (tokenExists) {
+                        if (parseInt(requestParams.otp) === parseInt(tokenExists.email_otp)) {
+                            if (tokenExists.emai_otp_expiry > Date.now()) {
+                                if (tokenExists.is_email_verified === Constants.NOT_VERIFIED) {
+                                    const Verification = {
+                                        is_email_verified: Constants.VERIFIED,
+                                    };
+                                    User.update(Verification,
+                                        {
+                                            where: {
+                                                id: tokenExists.id
+                                            }
+                                        }).then(async (update) => {
+                                        if (update) {
+                                            return Response.successResponseData(res, null, Constants.SUCCESS, res.locals.__('verificationSuccess'));
+                                        } else {
+                                            Response.errorResponseData(res, res.locals.__('somethingWentWrong'), FAIL);
+                                        }
+                                    });
+                                } else {
+                                    Response.successResponseWithoutData(res, res.locals.__('emailAlreadyVerified'), Constants.FAIL);
+                                }
+                            } else {
+                                Response.successResponseWithoutData(res, res.locals.__('otpExpired'), Constants.FAIL);
+                            }
+                        } else {
+                            Response.successResponseWithoutData(res, res.locals.__('wrongOTPEntered'), Constants.FAIL);
+                        }
+                    } else {
+                        Response.successResponseWithoutData(res, res.locals.__('emailNotValid'), Constants.FAIL);
+                    }
+                }, (err) => {
+                    Response.errorResponseData(res, res.__('internalError'), Constants.INTERNAL_SERVER);
+                });
+            }
+        });
+    },
+
 
     /**
      * @description "This function is for User-Login."
@@ -268,27 +311,35 @@ module.exports = {
                         checkPass = await bcrypt.compare(reqParam.password, user.password)
                     }
                     if (checkPass) {
-                        const userExpTime =
-                            Math.floor(Date.now() / 1000) +
-                            60 * 60 * 24 * process.env.USER_TOKEN_EXP
-                        const payload = {
-                            id: user.id,
-                            exp: userExpTime
+                        if (user.is_mobile_verified && user.is_email_verified) {
+                            const userExpTime =
+                                Math.floor(Date.now() / 1000) +
+                                60 * 60 * 24 * process.env.USER_TOKEN_EXP
+                            const payload = {
+                                id: user.id,
+                                exp: userExpTime
+                            }
+                            user.created_at = Helper.dateTimeTimestamp(user.createdAt)
+                            user.updated_at = Helper.dateTimeTimestamp(user.updatedAt)
+                            user.profile_image = Helper.mediaUrl(Constants.USER_PROFILE_IMAGE, user.profile_image)
+                            const token = issueUser(payload)
+                            const meta = {token}
+                            return Response.successResponseData(
+                                res,
+                                new Transformer.Single(user, Login).parse(),
+                                Constants.SUCCESS,
+                                res.locals.__('loginSuccess'),
+                                meta
+                            )
+                        } else {
+                            return Response.successResponseWithoutData(
+                                res,
+                                res.locals.__('pleaseVerifyYourEmailAndMobileFirst'),
+                                Constants.FAIL
+                            )
                         }
-                        user.created_at = Helper.dateTimeTimestamp(user.createdAt)
-                        user.updated_at = Helper.dateTimeTimestamp(user.updatedAt)
-                        user.profile_image = Helper.mediaUrl(Constants.USER_PROFILE_IMAGE, user.profile_image)
-                        const token = issueUser(payload)
-                        const meta = {token}
-                        return Response.successResponseData(
-                            res,
-                            new Transformer.Single(user, Login).parse(),
-                            Constants.SUCCESS,
-                            res.locals.__('loginSuccess'),
-                            meta
-                        )
                     } else {
-                        Response.successResponseWithoutData(
+                        return Response.successResponseWithoutData(
                             res,
                             res.locals.__('usernamePassNotMatch'),
                             Constants.FAIL
@@ -307,74 +358,6 @@ module.exports = {
 
 
     /**
-     * @description "This function is to Verify User-Email."
-     * @param req
-     * @param res
-     */
-    verifyNewEmail: async (req, res) => {
-        const requestParams = req.fields
-        verifyNewEmailValidation(requestParams, res, async (validate) => {
-            if (validate) {
-                await User.findOne({
-                    where: {
-                        otp: requestParams.otp,
-                        new_email: requestParams.email
-                    }
-                }).then(async (userData) => {
-                    if (userData) {
-                        if (userData.status === Constants.ACTIVE) {
-                            if (userData.email_expiry.getTime() > Date.now()) {
-                                userData.email_expiry = ''
-                                userData.otp = ''
-                                userData.email = requestParams.email
-                                userData.email_verification_status = Constants.VERIFIED
-                                await userData.save().then(() => {
-                                    return Response.successResponseWithoutData(
-                                        res,
-                                        res.__('emailVerifiedSuccessfully'),
-                                        Constants.SUCCESS
-                                    )
-                                }).catch(() => {
-                                    return Response.errorResponseData(
-                                        res,
-                                        res.__('internalError'),
-                                        Constants.INTERNAL_SERVER
-                                    )
-                                })
-                            } else {
-                                Response.successResponseWithoutData(
-                                    res, res.__('otpExpired'),
-                                    Constants.FAIL
-                                );
-                            }
-                        } else {
-                            Response.successResponseWithoutData(
-                                res, res.__('accountInactive'),
-                                Constants.FAIL
-                            );
-                        }
-                    } else {
-                        return Response.successResponseWithoutData(
-                            res,
-                            res.__('invalidOTPorEmail'),
-                            Constants.FAIL
-                        )
-                    }
-                }).catch(() => {
-                    return Response.errorResponseData(
-                        res,
-                        res.__('internalError'),
-                        Constants.INTERNAL_SERVER
-                    )
-                })
-            } else {
-                Response.errorResponseData(res, res.__('error'), Constants.INTERNAL_SERVER);
-            }
-        });
-    },
-
-
-    /**
      * @description This function is for User Forgot Password.
      * @param req
      * @param res
@@ -386,12 +369,12 @@ module.exports = {
                 User.findOne({
                     where: {
                         email: reqParam.email.toLowerCase(),
+                        mobile: reqParam.mobile,
                         status: {
                             [Op.ne]: Constants.DELETE
                         }
                     }
-                }).then(
-                    async (user) => {
+                }).then(async (user) => {
                         if (user) {
                             if (user.status === Constants.ACTIVE) {
                                 const minutesLater = new Date()
@@ -399,8 +382,8 @@ module.exports = {
                                     minutesLater.getMinutes() + 60
                                 )
                                 const otp = await Helper.makeRandomNumber(10)
-                                const hash = bcrypt.hashSync(otp, 10)
-                                user.password = hash
+                                //const hash = bcrypt.hashSync(otp, 10)
+                                user.otp = otp
                                 user.code_expiry = restTokenExpire
                                 await user.save().then(
                                     async (updatedUser) => {
@@ -411,6 +394,7 @@ module.exports = {
                                                 Constants.BAD_REQUEST
                                             )
                                         } else {
+                                            //TODO:SEND OTP HERE
                                             const locals = {
                                                 username: user.first_name,
                                                 appName: Helper.AppName,
@@ -419,7 +403,7 @@ module.exports = {
                                             try {
                                                 const mail = await Mailer.sendMail(reqParam.email, 'Forgot Password', Helper.forgotTemplate, locals)
                                                 if (mail) {
-                                                    return Response.successResponseData(res, null, Constants.SUCCESS, res.locals.__('forgotPasswordEmailSendSuccess'))
+                                                    return Response.successResponseData(res, null, Constants.SUCCESS, res.locals.__('otpSentToEmailAndMobile'))
                                                 } else {
                                                     return Response.errorResponseData(res, res.locals.__('globalError'), Constants.INTERNAL_SERVER)
                                                 }
@@ -593,6 +577,7 @@ module.exports = {
         })
     },
 
+
     /**
      * @description Edit Profile
      * @param req
@@ -628,7 +613,6 @@ module.exports = {
                         .then(async (profileData) => {
                             if (profileData) {
                                 const otp = await Helper.makeRandomDigit(4)
-                                const oldImageName = profileData.profile_image
                                 console.log("hello", profileData.mobile !== requestParams.mobile)
                                 if (profileData.mobile !== requestParams.mobile || profileData.email !== requestParams.email) {
                                     await User.findOne({
@@ -650,7 +634,7 @@ module.exports = {
                                             )
                                         } else {
                                             profileData.new_mobile = requestParams.mobile
-                                            profileData.new_verification_status = Constants.NOT_VERIFIED
+                                            profileData.is_mobile_verified = Constants.NOT_VERIFIED
                                             const minutesLater = new Date();
                                             const expiry = minutesLater.setMinutes(minutesLater.getMinutes() + 20);
                                             profileData.new_email = requestParams.email
@@ -690,7 +674,6 @@ module.exports = {
                                                 };
                                                 const imageName = image ? `${moment().unix()}${path.extname(req.files.profile_image.name)}` : ''
                                                 await Helper.uploadImage(req.files.profile_image, Constants.USER_PROFILE_IMAGE, imageName)
-                                                await Helper.removeOldImage(oldImageName, Constants.USER_PROFILE_IMAGE, res)
                                                 await Mailer.sendMail(requestParams.email, 'Reset Your Odyssey mobile/email', Helper.welcomeTemplate, locals);
                                             } else {
                                                 result.profile_image = Helper.mediaUrl(Constants.USER_PROFILE_IMAGE, profileData.profile_image)
@@ -732,6 +715,74 @@ module.exports = {
                 }
             }
         })
+    },
+
+
+    /**
+     * @description "This function is to Verify User-Email."
+     * @param req
+     * @param res
+     */
+    verifyNewEmail: async (req, res) => {
+        const requestParams = req.fields
+        verifyNewEmailValidation(requestParams, res, async (validate) => {
+            if (validate) {
+                await User.findOne({
+                    where: {
+                        otp: requestParams.otp,
+                        new_email: requestParams.email
+                    }
+                }).then(async (userData) => {
+                    if (userData) {
+                        if (userData.status === Constants.ACTIVE) {
+                            if (userData.email_expiry.getTime() > Date.now()) {
+                                userData.email_expiry = ''
+                                userData.otp = ''
+                                userData.email = requestParams.email
+                                userData.email_verification_status = Constants.VERIFIED
+                                await userData.save().then(() => {
+                                    return Response.successResponseWithoutData(
+                                        res,
+                                        res.__('emailVerifiedSuccessfully'),
+                                        Constants.SUCCESS
+                                    )
+                                }).catch(() => {
+                                    return Response.errorResponseData(
+                                        res,
+                                        res.__('internalError'),
+                                        Constants.INTERNAL_SERVER
+                                    )
+                                })
+                            } else {
+                                Response.successResponseWithoutData(
+                                    res, res.__('otpExpired'),
+                                    Constants.FAIL
+                                );
+                            }
+                        } else {
+                            Response.successResponseWithoutData(
+                                res, res.__('accountInactive'),
+                                Constants.FAIL
+                            );
+                        }
+                    } else {
+                        return Response.successResponseWithoutData(
+                            res,
+                            res.__('invalidOTPorEmail'),
+                            Constants.FAIL
+                        )
+                    }
+                }).catch(() => {
+                    return Response.errorResponseData(
+                        res,
+                        res.__('internalError'),
+                        Constants.INTERNAL_SERVER
+                    )
+                })
+            } else {
+                Response.errorResponseData(res, res.__('error'), Constants.INTERNAL_SERVER);
+            }
+        });
     },
 
     /**
@@ -791,7 +842,7 @@ module.exports = {
     },
 
     /**
-     * @description 'This function is use to add leave.'
+     * @description 'This function is use to add add user's KYC.'
      * @param req
      * @param res
      * @returns {Promise<void>}
@@ -806,8 +857,6 @@ module.exports = {
                     image = true
                     await Helper.imageValidation(req, res, req.files.photo_id_image)
                     await Helper.imageSizeValidation(req, res, req.files.photo_id_image.size)
-                    await Helper.imageValidation(req, res, req.files.address_image)
-                    await Helper.imageSizeValidation(req, res, req.files.address_image.size)
                 } else {
                     return Response.errorResponseData(
                         res,
@@ -883,25 +932,24 @@ const socialAccountCheckByUser = async (userId, res) => {
 
 const getSocialAuthType = async (body, user) => {
     let userSocialAuthMeta = {}
-
     // Google
-    if (!_.isUndefined(body.provider_data.google_id)) {
+    if (!_.isUndefined(body.social_data.auth_id.google_id)) {
         userSocialAuthMeta = {
-            social_id: body.provider_data.google_id,
+            social_id: body.social_data.auth_id.google_id,
             name: 'GOOGLE',
             user_id: user.id,
-            provider_data: body.provider_data
+            social_data: body.social_data
         }
         return userSocialAuthMeta
     }
 
     // Facebook
-    if (!_.isUndefined(body.provider_data.facebook_id)) {
+    if (!_.isUndefined(body.social_data.auth_id.facebook_id)) {
         userSocialAuthMeta = {
-            social_id: body.provider_data.facebook_id,
+            social_id: body.social_data.auth_id.facebook_id,
             name: 'FACEBOOK',
             user_id: user.id,
-            provider_data: body.provider_data
+            social_data: body.social_data
         }
         return userSocialAuthMeta
     }
@@ -929,14 +977,16 @@ const getUserBySocial = id =>
         ]
     })
 
-const checkSocialID = (socialId, res) =>
-    userSocial.findOne({
+const checkSocialID = async (socialId, res) => {
+    await userSocial.findOne({
         where: {
             social_id: socialId
         }
     }).then((data) => {
         if (data) {
+            console.log("LLLLLL....1")
             if (data.name === 'GOOGLE') {
+                console.log("LLLLLL....2")
                 return Response.socialError(res, res.locals.__('socialAccountAlreadyExistWithGoogle'), Constants.ACCOUNT_TYPE.GOOGLE)
             } else if (data.name === 'FACEBOOK') {
                 return Response.socialError(res, res.locals.__('socialAccountAlreadyExistWithFacebook'), Constants.ACCOUNT_TYPE.FACEBOOK)
@@ -944,5 +994,6 @@ const checkSocialID = (socialId, res) =>
         }
         return null
     })
+}
 
 

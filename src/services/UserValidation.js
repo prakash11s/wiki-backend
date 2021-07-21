@@ -10,10 +10,10 @@ module.exports = {
       first_name: Joi.string().trim().required(),
       last_name: Joi.string().trim().required(),
       email: Joi.string().trim().email().required().regex(/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/),
-      password: Joi.string().trim().min(6).required().regex(/^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9!@#$%^&*]{6,}$/),
+      password: Joi.string().trim().min(6).optional().regex(/^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9!@#$%^&*]{6,}$/),
       mobile: Joi.string().trim().min(10).max(10).required().regex(/^[6-9]\d{9}$/),
-      address: Joi.string().trim().min(10).required(),
-      provider_data:Joi.object()
+      //address: Joi.string().trim().min(10).required(),
+      social_data:Joi.object().optional()
     })
     const { error } = schema.validate(req)
     if (error) {
@@ -68,8 +68,6 @@ module.exports = {
       zipcode: Joi.string().trim().required(),
       photo_id_proof: Joi.string().trim().optional(),
       photo_id_image: Joi.string().trim().optional(),
-      address_proof: Joi.string().trim().optional(),
-      address_image: Joi.string().trim().optional(),
     })
     const { error } = schema.validate(req)
     if (error) {
@@ -131,7 +129,19 @@ module.exports = {
     })
     const { error } = schema.validate(req);
     if (error) {
-      Response.validationErrorResponseData(res, res.__(Helper.validationMessageKey('emailVerification', error)));
+      Response.validationErrorResponseData(res, res.__(Helper.validationMessageKey('emailVerificationValidation', error)));
+    }
+    return callback(true);
+  },
+
+  mobileVerificationValidation: (req, res, callback) => {
+    const schema = Joi.object({
+      otp: Joi.string().required(),
+      mobile: Joi.string().required(),
+    })
+    const { error } = schema.validate(req);
+    if (error) {
+      Response.validationErrorResponseData(res, res.__(Helper.validationMessageKey('mobileVerificationValidation', error)));
     }
     return callback(true);
   },

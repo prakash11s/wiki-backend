@@ -20,6 +20,19 @@ module.exports = {
         type: Sequelize.STRING(20),
         allowNull: false
       },
+      new_mobile: {
+        type: Sequelize.STRING(20),
+        allowNull: true,
+        defaultValue: ''
+      },
+      mobile_otp: {
+        type: Sequelize.STRING(10),
+        allowNull: true
+      },
+      mobile_otp_expiry: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
       email: {
         type: Sequelize.STRING(100),
         allowNull: false
@@ -28,10 +41,13 @@ module.exports = {
         type:Sequelize.STRING(100),
         defaultsTo: ''
       },
-      email_expiry: {
+      email_otp: {
+        type: Sequelize.STRING(10),
+        allowNull: true
+      },
+      email_otp_expiry: {
         type: Sequelize.DATE,
-        description: '',
-        defaultsTo: null
+        allowNull: true,
       },
       password: {
         type: Sequelize.STRING(100),
@@ -39,36 +55,23 @@ module.exports = {
       },
       address: {
         type: Sequelize.STRING(100),
-        allowNull: false
-      },
-      otp: {
-        type: Sequelize.STRING(10),
-        allowNull: true
-      },
-      otp_expiry: {
-        type: Sequelize.DATE,
         allowNull: true
       },
       profile_image: {
         type: Sequelize.STRING(50),
         allowNull: true
       },
-      verification_status: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        defaultValue: Constants.NOT_VERIFIED,
-        comment: '0-pending,1-done'
+      is_kyc_verified: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
       },
-      new_mobile: {
-        type: Sequelize.STRING(20),
-        allowNull: true,
-        defaultValue: ''
+      is_mobile_verified: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
       },
-      new_verification_status: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-        defaultValue: null,
-        comment: '0-pending,1-done'
+      is_email_verified: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
       },
       status: {
         type: Sequelize.INTEGER,

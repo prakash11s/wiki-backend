@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
         name: {
             type: DataTypes.STRING
         },
-        provider_data: {
+        social_data: {
             allowNull: true,
             type: DataTypes.JSON,
         }

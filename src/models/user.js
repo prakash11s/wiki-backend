@@ -26,51 +26,53 @@ module.exports = (sequelize, DataTypes) => {
     mobile: {
       type: DataTypes.STRING(20)
     },
+    new_mobile: {
+      type: DataTypes.STRING(100),
+    },
     email: {
       type: DataTypes.STRING(100)
     },
     new_email: {
       type: DataTypes.STRING(100),
-      defaultsTo: ''
-    },
-    email_expiry: {
-      type: DataTypes.DATE,
-      defaultsTo: null
     },
     address: {
-      type: DataTypes.STRING(200)
+      type: DataTypes.STRING(200),
+      allowNull: true
     },
     password: {
       type: DataTypes.STRING(100)
     },
-    otp: {
+    mobile_otp: {
       type: DataTypes.STRING(10),
-      defaultsTo: ''
     },
-    otp_expiry: {
+    mobile_otp_expiry: {
       type: DataTypes.DATE,
-      defaultsTo: null
+    },
+    email_otp: {
+      type: DataTypes.STRING(10),
+    },
+    email_otp_expiry: {
+      type: DataTypes.DATE,
     },
     profile_image: {
-      type: DataTypes.STRING(50)
+      type: DataTypes.STRING(50),
+      allowNull: true
     },
-    verification_status: {
+    is_mobile_verified: {
       type: DataTypes.INTEGER,
-      defaultsTo: Constants.NOT_VERIFIED
+      defaultsTo: false
     },
-    email_verification_status: {
+    is_email_verified: {
       type: DataTypes.INTEGER,
-      defaultsTo: Constants.NOT_VERIFIED
+      defaultsTo: false
     },
-    new_mobile: {
-      type: DataTypes.STRING(20),
-      defaultsTo: ''
-    },
-    new_verification_status: {
-      type: DataTypes.INTEGER
+    is_kyc_verified: {
+      type: DataTypes.INTEGER,
+      defaultsTo: false
     },
     status: {
-      type: DataTypes.INTEGER
+      type: DataTypes.INTEGER,
+      defaultsTo: Constants.INACTIVE
     }
   }, {
     sequelize,

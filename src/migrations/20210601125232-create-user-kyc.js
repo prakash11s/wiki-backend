@@ -15,16 +15,16 @@ module.exports = {
           key: 'id'
         }
       },
-      firstName: {
+      first_name: {
         type: Sequelize.STRING
       },
-      midName: {
+      middle_name: {
         type: Sequelize.STRING
       },
-      lastName: {
+      last_name: {
         type: Sequelize.STRING
       },
-      dob: {
+      date_of_birth: {
         type: Sequelize.DATE
       },
       address: {
@@ -36,19 +36,13 @@ module.exports = {
       state: {
         type: Sequelize.STRING
       },
-      zipcode: {
+      pin_code: {
         type: Sequelize.STRING
       },
       photo_id_proof: {
         type: Sequelize.STRING
       },
       photo_id_image: {
-        type: Sequelize.STRING
-      },
-      address_proof: {
-        type: Sequelize.STRING
-      },
-      address_image: {
         type: Sequelize.STRING
       },
       createdAt: {

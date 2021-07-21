@@ -52,5 +52,9 @@
 	"noDataFound": "noDataFound",
 	"UserStatusActivated": "UserStatusActivated",
 	"UserStatusDeactivated": "UserStatusDeactivated",
-	"UserDeleted": "UserDeleted"
+	"UserDeleted": "UserDeleted",
+	"userRegisterValidationSocialDataUnknown": "userRegisterValidationSocialDataUnknown",
+	"userRegisterValidationMobileMax": "userRegisterValidationMobileMax",
+	"userRegisterValidationProviderDataUnknown": "userRegisterValidationProviderDataUnknown",
+	"loginPasswordValidationPasswordEmpty": "loginPasswordValidationPasswordEmpty"
 }
