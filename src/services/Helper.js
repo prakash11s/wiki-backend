@@ -233,84 +233,10 @@ module.exports = {
       return null
     }),
 
-  getStatusFromCode: (code) => {
-    if (code === Constants.HEALTH_STATUS.LOW_RISK) {
-      return Constants.HEALTH_STATUS_TITLE.LOW_RISK
-    } else if (code === Constants.HEALTH_STATUS.HIGH_RISK) {
-      return Constants.HEALTH_STATUS_TITLE.HIGH_RISK
-    } else if (code === Constants.HEALTH_STATUS.POSITIVE) {
-      return Constants.HEALTH_STATUS_TITLE.POSITIVE
-    } else if (code === Constants.HEALTH_STATUS.NEGATIVE) {
-      return Constants.HEALTH_STATUS_TITLE.NEGATIVE
-    } else if (code === Constants.HEALTH_STATUS.NOT_TESTED) {
-      return Constants.HEALTH_STATUS_TITLE.NOT_TESTED
-    } else {
-      return ''
-    }
-  },
-
-  getBgFromCode: (code) => {
-    if (code === Constants.HEALTH_STATUS.LOW_RISK) {
-      return Constants.HEALTH_STATUS_COLOR_CODE.LOW_RISK
-    } else if (code === Constants.HEALTH_STATUS.HIGH_RISK) {
-      return Constants.HEALTH_STATUS_COLOR_CODE.HIGH_RISK
-    } else if (code === Constants.HEALTH_STATUS.POSITIVE) {
-      return Constants.HEALTH_STATUS_COLOR_CODE.POSITIVE
-    } else if (code === Constants.HEALTH_STATUS.NEGATIVE) {
-      return Constants.HEALTH_STATUS_COLOR_CODE.NEGATIVE
-    } else if (code === Constants.HEALTH_STATUS.NOT_TESTED) {
-      return Constants.HEALTH_STATUS_COLOR_CODE.NOT_TESTED
-    } else {
-      return ''
-    }
-  },
-
   dateTimeTimestamp: (date) => {
     return new Date(date).getTime() / 1000
   },
 
-  sendPushNotification: (token, status) => {
-    let healthStatusName
-    if (status === Constants.HEALTH_STATUS.LOW_RISK) {
-      healthStatusName = Constants.HEALTH_STATUS_TITLE.LOW_RISK
-    } else if (status === Constants.HEALTH_STATUS.HIGH_RISK) {
-      healthStatusName = Constants.HEALTH_STATUS_TITLE.HIGH_RISK
-    } else if (status === Constants.HEALTH_STATUS.POSITIVE) {
-      healthStatusName = Constants.HEALTH_STATUS_TITLE.POSITIVE
-    } else if (status === Constants.HEALTH_STATUS.NEGATIVE) {
-      healthStatusName = Constants.HEALTH_STATUS_TITLE.NEGATIVE
-    } else if (status === Constants.HEALTH_STATUS.NOT_TESTED) {
-      healthStatusName = Constants.HEALTH_STATUS_TITLE.NOT_TESTED
-    } else {
-      healthStatusName = ''
-    }
-    /* SAMPLE CODE */
-    const message = {
-      data: {
-        title: 'Covid',
-        body: `Your health status is updated: Your current health status is ${healthStatusName}`
-      },
-      token: token
-    }
-
-    firebaseAdmin.messaging().send(message).then((result) => {
-      console.log('Successfully sent notification:', result)
-    })
-  },
-
-  appDeviceToken: async (user_id) => {
-    return await UserDeviceToken.findAll({
-      where: {
-        device_type: {
-          [Op.ne]: [Constants.WEB]
-        },
-        user_id: user_id
-      },
-      attributes: ['device_token']
-    }).then((token) => {
-      return token
-    })
-  },
 
   dobToAge: (date) => {
     var dob = date
@@ -345,44 +271,7 @@ module.exports = {
     }
   },
 
-  /**
-   * @description This function use for Creating OTP
-   * @param countryCode
-   * @param mobile
-   * @param status
-   * @param date
-   * @param labName
-   */
-  sendHealthStatusReport: (countryCode, mobile, status, date, labName) => {
-    let stat = module.exports.getStatusFromCode(parseInt(status, 10))
-    const mob = `${countryCode}${mobile}`
-    const tim = moment(date).format('ll');
-    // const tim = date.toUTCString()
-    // const newDat = tim.substr(0,16)
-    // const newTim = tim.substr(17,5)
-    return new Promise((resolve, reject) => {
-      Twilio.messages
-          .create({
-            body: `The result for your Covid test on ${tim} at ${labName} is ${stat}. Check more details in CMS Covid-ID mobile app.`,
-            from: process.env.TWILIO_MOBILE,
-            to: mob
-          })
-          .then((message) => {
-            console.log(message.sid)
-            return resolve({
-              code: 200,
-              message: 'sent'
-            })
-          }).catch((e) => {
-        console.log(e)
-        return resolve({
-          code: 400,
-          message: e
-        })
-      })
-      return null
-    })
-  },
+
 
   unitConversion: (cases) => {
     if (isNaN(cases)) return cases;

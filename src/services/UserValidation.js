@@ -78,6 +78,8 @@ module.exports = {
     }
     return callback(true)
   },
+
+
   editProfileValidation: (req, res, callback) => {
     const requestObj = {
       first_name: Joi.string().trim().max(60).optional(),

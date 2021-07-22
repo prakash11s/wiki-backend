@@ -14,18 +14,16 @@ const {
 } = require('../../services/AdminValidation')
 const {
     editProfileValidation,
-    kycValidation,
     verifyNewMobileValidation,
     verifyNewEmailValidation,
-    emailVerificationValidation
+    emailVerificationValidation,
+    mobileVerificationValidation
 } = require('../../services/UserValidation')
-const {Login} = require('../../transformers/api/UserTransformer')
-const {User, userSocial, userKYC} = require('../../models')
+const {Login, userDetails} = require('../../transformers/api/UserTransformer')
+const {User, userSocial} = require('../../models')
 const {issueUser} = require('../../services/jwtTokenForUser')
 const {Op} = require('sequelize')
-const QRCode = require('qrcode')
 const path = require('path')
-const fs = require('fs')
 const Mailer = require('../../services/Mailer')
 const bcrypt = require('bcryptjs');
 const _ = require('lodash')
@@ -215,16 +213,16 @@ module.exports = {
             if (validate) {
                 User.findOne({
                     where: {
-                        email: requestParams.email,
+                        mobile: requestParams.email,
                         status: {$ne: Constants.DELETE}
                     }
                 }).then((tokenExists) => {
                     if (tokenExists) {
                         if (parseInt(requestParams.otp) === parseInt(tokenExists.email_otp)) {
-                            if (tokenExists.emai_otp_expiry > Date.now()) {
-                                if (tokenExists.is_email_verified === Constants.NOT_VERIFIED) {
+                            if (tokenExists.mobile_otp_expiry > Date.now()) {
+                                if (tokenExists.is_mobile_verified === Constants.NOT_VERIFIED) {
                                     const Verification = {
-                                        is_email_verified: Constants.VERIFIED,
+                                        is_mobile_verified: Constants.VERIFIED,
                                     };
                                     User.update(Verification,
                                         {
@@ -233,7 +231,7 @@ module.exports = {
                                             }
                                         }).then(async (update) => {
                                         if (update) {
-                                            return Response.successResponseData(res, null, Constants.SUCCESS, res.locals.__('verificationSuccess'));
+                                            return Response.successResponseData(res, null, Constants.SUCCESS, res.locals.__('mobileVerificationSuccess'));
                                         } else {
                                             Response.errorResponseData(res, res.locals.__('somethingWentWrong'), FAIL);
                                         }
@@ -470,96 +468,95 @@ module.exports = {
                             [Op.ne]: Constants.DELETE
                         }
                     }
-                })
-                    .then(async (userData) => {
-                        if (userData) {
-                            bcrypt.compare(
-                                requestParams.old_password,
-                                userData.password,
-                                async (err, oldPasswordRes) => {
-                                    if (err) {
-                                        Response.errorResponseData(
-                                            res,
-                                            res.__('somethingWentWrong'),
-                                            Constants.INTERNAL_SERVER
-                                        )
-                                    }
-                                    if (oldPasswordRes) {
-                                        bcrypt.compare(
-                                            requestParams.password,
-                                            userData.password,
-                                            async (innerErr, newPasswordRes) => {
-                                                if (innerErr) {
-                                                    Response.errorResponseData(
-                                                        res,
-                                                        res.__('somethingWentWrong'),
-                                                        Constants.INTERNAL_SERVER
-                                                    )
-                                                }
-                                                if (newPasswordRes) {
-                                                    Response.successResponseWithoutData(
-                                                        res,
-                                                        res.__('oldNewPasswordSame'),
-                                                        Constants.FAIL
-                                                    )
-                                                } else {
-                                                    bcrypt.hash(
-                                                        requestParams.password,
-                                                        10,
-                                                        (bcryptErr, userPass) => {
-                                                            if (bcryptErr) {
+                }).then(async (userData) => {
+                    if (userData) {
+                        bcrypt.compare(
+                            requestParams.old_password,
+                            userData.password,
+                            async (err, oldPasswordRes) => {
+                                if (err) {
+                                    Response.errorResponseData(
+                                        res,
+                                        res.__('somethingWentWrong'),
+                                        Constants.INTERNAL_SERVER
+                                    )
+                                }
+                                if (oldPasswordRes) {
+                                    bcrypt.compare(
+                                        requestParams.password,
+                                        userData.password,
+                                        async (innerErr, newPasswordRes) => {
+                                            if (innerErr) {
+                                                Response.errorResponseData(
+                                                    res,
+                                                    res.__('somethingWentWrong'),
+                                                    Constants.INTERNAL_SERVER
+                                                )
+                                            }
+                                            if (newPasswordRes) {
+                                                Response.successResponseWithoutData(
+                                                    res,
+                                                    res.__('oldNewPasswordSame'),
+                                                    Constants.FAIL
+                                                )
+                                            } else {
+                                                bcrypt.hash(
+                                                    requestParams.password,
+                                                    10,
+                                                    (bcryptErr, userPass) => {
+                                                        if (bcryptErr) {
+                                                            Response.errorResponseData(
+                                                                res,
+                                                                res.__('somethingWentWrong'),
+                                                                Constants.INTERNAL_SERVER
+                                                            )
+                                                        }
+                                                        User.update(
+                                                            {
+                                                                password: userPass
+                                                            },
+                                                            {
+                                                                where: {
+                                                                    id: userData.id
+                                                                }
+                                                            }
+                                                        ).then((update) => {
+                                                            if (update) {
+                                                                Response.successResponseWithoutData(
+                                                                    res,
+                                                                    res.__('changePasswordSuccess')
+                                                                )
+                                                            } else {
                                                                 Response.errorResponseData(
                                                                     res,
                                                                     res.__('somethingWentWrong'),
                                                                     Constants.INTERNAL_SERVER
                                                                 )
                                                             }
-                                                            User.update(
-                                                                {
-                                                                    password: userPass
-                                                                },
-                                                                {
-                                                                    where: {
-                                                                        id: userData.id
-                                                                    }
-                                                                }
-                                                            ).then((update) => {
-                                                                if (update) {
-                                                                    Response.successResponseWithoutData(
-                                                                        res,
-                                                                        res.__('changePasswordSuccess')
-                                                                    )
-                                                                } else {
-                                                                    Response.errorResponseData(
-                                                                        res,
-                                                                        res.__('somethingWentWrong'),
-                                                                        Constants.INTERNAL_SERVER
-                                                                    )
-                                                                }
-                                                            })
-                                                        }
-                                                    )
-                                                }
-                                            })
-                                    } else {
-                                        Response.successResponseWithoutData(
-                                            res,
-                                            res.__('oldPasswordNotMatch'),
-                                            Constants.FAIL
-                                        )
-                                    }
+                                                        })
+                                                    }
+                                                )
+                                            }
+                                        })
+                                } else {
+                                    Response.successResponseWithoutData(
+                                        res,
+                                        res.__('oldPasswordNotMatch'),
+                                        Constants.FAIL
+                                    )
                                 }
-                            )
-                        } else {
-                            return Response.successResponseData(
-                                res,
-                                null,
-                                Constants.SUCCESS,
-                                res.locals.__('noUserFound')
-                            )
-                        }
-                        return null
-                    })
+                            }
+                        )
+                    } else {
+                        return Response.successResponseData(
+                            res,
+                            null,
+                            Constants.SUCCESS,
+                            res.locals.__('noUserFound')
+                        )
+                    }
+                    return null
+                })
                     .catch(() => {
                         Response.errorResponseData(
                             res,
@@ -786,6 +783,57 @@ module.exports = {
     },
 
     /**
+     * @description 'This function is for User's Details.'
+     * @param req
+     * @param res
+     * @returns {Promise<void>}
+     */
+    myDetails: async (req, res) => {
+        const userId = req.authUserId
+        if (userId === null) {
+            return Response.errorResponseData(
+                res,
+                res.__('invalidId'),
+                Constants.BAD_REQUEST
+            )
+        } else {
+            await User.findOne({
+                where: {
+                    id: userId,
+                    status: {
+                        [Op.ne]: [Constants.DELETE]
+                    }
+                }
+            }).then(async (result) => {
+                    if (result) {
+                        result.profile_image = Helper.mediaUrl(Constants.USER_PROFILE_IMAGE, result.profile_image)
+                        return Response.successResponseData(
+                            res,
+                            new Transformer.Single(result, userDetails).parse(),
+                            Constants.SUCCESS,
+                            res.__('success')
+                        )
+                    } else {
+                        return Response.successResponseData(
+                            res,
+                            {},
+                            Constants.SUCCESS,
+                            res.__('noDataFound')
+                        )
+                    }
+                })
+                .catch(() => {
+                    return Response.errorResponseData(
+                        res,
+                        res.__('internalError'),
+                        Constants.INTERNAL_SERVER
+                    )
+                })
+        }
+    },
+
+
+    /**
      * @description 'This function is use to verify otp.'
      * @param req
      * @param res
@@ -841,70 +889,6 @@ module.exports = {
         });
     },
 
-    /**
-     * @description 'This function is use to add add user's KYC.'
-     * @param req
-     * @param res
-     * @returns {Promise<void>}
-     */
-    kycAdd: async (req, res) => {
-        const requestParams = req.fields
-        let image = false
-        kycValidation(requestParams, res, async (validate) => {
-            if (validate) {
-                const time = moment().unix()
-                if (req.files.photo_id_image && req.files.address_image) {
-                    image = true
-                    await Helper.imageValidation(req, res, req.files.photo_id_image)
-                    await Helper.imageSizeValidation(req, res, req.files.photo_id_image.size)
-                } else {
-                    return Response.errorResponseData(
-                        res,
-                        res.__('imageIsRequired'),
-                        Constants.BAD_REQUEST
-                    )
-                }
-                const photoIDImage = image ? `${time}${path.extname(req.files.photo_id_image.name)}` : ''
-                const addressImage = image ? `${time}${path.extname(req.files.address_image.name)}` : ''
-                const userKycObj = {
-                    firstName: requestParams.firstName,
-                    lastName: requestParams.lastName,
-                    dob: requestParams.dob,
-                    address: requestParams.address,
-                    city: requestParams.city,
-                    state: requestParams.state,
-                    zipcode: requestParams.zipcode,
-                }
-                if (image) {
-                    userKycObj.photo_id_proof = requestParams.photo_id_proof
-                    userKycObj.photo_id_image = photoIDImage
-                    userKycObj.address_proof = requestParams.address_proof
-                    userKycObj.address_image = addressImage
-                }
-                await userKYC.create(userKycObj)
-                    .then(async (result) => {
-                        if (result) {
-                            if (image) {
-                                await Helper.uploadImage(req.files.photo_id_image, Constants.PHOTO_IMAGE, photoIDImage)
-                                await Helper.uploadImage(req.files.address_image, Constants.ADDRESS_IMAGE, addressImage)
-                            }
-                            Response.successResponseWithoutData(
-                                res,
-                                res.__('KYCAddedSuccessfully.'),
-                                Constants.SUCCESS,
-                            )
-                        }
-                    })
-                    .catch(async (e) => {
-                        Response.errorResponseData(
-                            res,
-                            res.__('internalError'),
-                            Constants.INTERNAL_SERVER
-                        )
-                    })
-            }
-        })
-    },
 }
 /*-----------------------------------User Functions-------------------------------------------*/
 

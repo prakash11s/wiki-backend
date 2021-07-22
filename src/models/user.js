@@ -24,13 +24,15 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(50)
     },
     mobile: {
-      type: DataTypes.STRING(20)
+      type: DataTypes.STRING(20),
+      unique: true
     },
     new_mobile: {
       type: DataTypes.STRING(100),
     },
     email: {
-      type: DataTypes.STRING(100)
+      type: DataTypes.STRING(100),
+      unique: true
     },
     new_email: {
       type: DataTypes.STRING(100),
