@@ -56,5 +56,8 @@
 	"userRegisterValidationSocialDataUnknown": "userRegisterValidationSocialDataUnknown",
 	"userRegisterValidationMobileMax": "userRegisterValidationMobileMax",
 	"userRegisterValidationProviderDataUnknown": "userRegisterValidationProviderDataUnknown",
-	"loginPasswordValidationPasswordEmpty": "loginPasswordValidationPasswordEmpty"
+	"loginPasswordValidationPasswordEmpty": "loginPasswordValidationPasswordEmpty",
+	"pleaseVerifyYourEmailAndMobileFirst": "pleaseVerifyYourEmailAndMobileFirst",
+	"emailVerificationValidationOtpRequired": "emailVerificationValidationOtpRequired",
+	"mobileVerificationValidationOtpRequired": "mobileVerificationValidationOtpRequired"
 }

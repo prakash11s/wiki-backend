@@ -7,17 +7,19 @@ module.exports = (sequelize, DataTypes) => {
                 sourceKey: 'id',
                 foreignKey: 'user_id'
             })
-            // userAccount.hasOne(models.Subscription, {
-            //     sourceKey: 'id',
-            //     foreignKey: 'subscription_id'
-            // })
+            userAccount.hasOne(models.Membership, {
+                sourceKey: 'id',
+                foreignKey: 'membership_id'
+            })
         }
     }
+
     userAccount.init({
         id: {
-            type: DataTypes.INTEGER,
+            allowNull: false,
             autoIncrement: true,
-            primaryKey: true
+            primaryKey: true,
+            type: DataTypes.INTEGER
         },
         user_id: {
             type: DataTypes.INTEGER,
@@ -26,12 +28,21 @@ module.exports = (sequelize, DataTypes) => {
                 key: 'id'
             }
         },
-        subscription_id: {
+        membership_id: {
             type: DataTypes.INTEGER,
             references: {
-                model: 'subscriptions',
+                model: 'membership',
                 key: 'id'
             }
+        },
+        individual_hrs: {
+            type: DataTypes.INTEGER
+        },
+        group_pod_hrs: {
+            type: DataTypes.INTEGER
+        },
+        terrace_hrs: {
+            type: DataTypes.INTEGER
         }
     }, {
         sequelize,

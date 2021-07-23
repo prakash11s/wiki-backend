@@ -26,8 +26,14 @@ const {
 } = require('../../controllers/api/kycController')
 
 const {
-    allPodsList
+    allPodsList,
+    podsDetails,
+    podsBooking
 } = require('../../controllers/api/podsContoller')
+
+const {
+    getAllMemberships
+} = require("../../controllers/api/membershipController");
 
 const authMiddleware = (() => {
     const chain = connect()
@@ -62,10 +68,13 @@ router.post('/submit-kyc', formidableMiddleware(), [authMiddleware], kycAdd)
 router.get('/my-kyc-details', formidableMiddleware(), [authMiddleware], kycDetails)
 router.post('/update-kyc', formidableMiddleware(), [authMiddleware], updateKyc)
 
-
 //Pods Module
 router.get('/all-pods-list', allPodsList)
+router.get('/get-pods-details', podsDetails)
+router.post("/book-pod", formidableMiddleware(),[authMiddleware], podsBooking);
 
+//Membership
+router.get("/get-membership-details", getAllMemberships)
 
 
 module.exports = router
