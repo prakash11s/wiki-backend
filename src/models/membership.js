@@ -5,12 +5,11 @@ module.exports = (sequelize, DataTypes) => {
     class Membership extends Model {
         static associate(models) {
             Membership.hasMany(models.userAccount, {
-                foreignKey: 'user_id',
+                foreignKey: 'membership_id',
                 sourceKey: 'id'
             })
         }
     }
-
     Membership.init({
         id: {
             allowNull: false,

@@ -7,13 +7,12 @@ module.exports = (sequelize, DataTypes) => {
                 sourceKey: 'id',
                 foreignKey: 'user_id'
             })
-            userAccount.hasOne(models.Membership, {
+            userAccount.belongsTo(models.Membership, {
                 sourceKey: 'id',
                 foreignKey: 'membership_id'
             })
         }
     }
-
     userAccount.init({
         id: {
             allowNull: false,

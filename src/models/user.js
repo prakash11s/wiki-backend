@@ -8,6 +8,14 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'user_id',
         sourceKey: 'id'
       })
+      User.hasOne(models.userAccount, {
+        foreignKey: 'user_id',
+        sourceKey: 'id'
+      })
+      User.hasOne(models.userKYC, {
+        foreignKey: 'user_id',
+        sourceKey: 'id'
+      })
     }
   }
   User.init({
