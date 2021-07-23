@@ -157,7 +157,6 @@ module.exports = {
    * @param req
    * @param res
    */
-
   subAdminList: async (req, res) => {
     const requestParams = req.query;
     const limit = requestParams.per_page && requestParams.per_page > 0

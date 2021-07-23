@@ -1,19 +1,15 @@
 'use strict';
 const {Model} = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-    class userAccount extends Model {
+    class podBookings extends Model {
         static associate(models) {
-            userAccount.belongsTo(models.User, {
+            podBookings.belongsTo(models.Pods, {
                 sourceKey: 'id',
                 foreignKey: 'user_id'
             })
-            // userAccount.hasOne(models.Subscription, {
-            //     sourceKey: 'id',
-            //     foreignKey: 'subscription_id'
-            // })
         }
     }
-    userAccount.init({
+    podBookings.init({
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
@@ -26,18 +22,33 @@ module.exports = (sequelize, DataTypes) => {
                 key: 'id'
             }
         },
-        subscription_id: {
+        pod_id: {
             type: DataTypes.INTEGER,
             references: {
-                model: 'subscriptions',
+                model: 'pods',
                 key: 'id'
             }
+        },
+        booking_hours: {
+            type: DataTypes.INTEGER
+        },
+        booking_date: {
+            type: DataTypes.INTEGER
+        },
+        start_time: {
+            type: DataTypes.DATE
+        },
+        end_time: {
+            type: DataTypes.DATE
+        },
+        amount:{
+            type: DataTypes.INTEGER
         }
     }, {
         sequelize,
-        modelName: 'userAccount',
-        tableName: 'user_accounts',
+        modelName: 'podBookings',
+        tableName: 'pod_bookings',
         timestamps: true
     });
-    return userAccount;
+    return podBookings;
 };

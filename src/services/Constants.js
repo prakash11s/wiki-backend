@@ -39,5 +39,9 @@ module.exports = {
     LOCAL : 1,
     GOOGLE: 2,
     FACEBOOK : 3
+  },
+  POD_TYPE:{
+    INDIVIDUAL : 'individual',
+    GROUP : 'group'
   }
 }

@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         type: {
             type: DataTypes.INTEGER,
-            defaultValue: '2',
+            defaultValue: 2,
             comment: '1:super-admin,2:sub-admin',
         },
         name: {
@@ -39,6 +39,7 @@ module.exports = (sequelize, DataTypes) => {
         sequelize,
         modelName: 'Admin',
         tableName: 'admin',
+        timestamps: true,
         indexes: [
             {
                 unique: false,

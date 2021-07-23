@@ -598,8 +598,7 @@ module.exports = {
                         await Helper.imageValidation(req, res, req.files.profile_image)
                         await Helper.imageSizeValidation(req, res, req.files.profile_image.size)
                     }
-                    await User
-                        .findOne({
+                    await User.findOne({
                             where: {
                                 id: req.authUserId,
                                 status: {

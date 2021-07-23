@@ -52,6 +52,7 @@ module.exports = (sequelize, DataTypes) => {
         sequelize,
         modelName: 'userKYC',
         tableName: 'user_kyc',
+        timestamps: true
     });
     return userKYC;
 };
