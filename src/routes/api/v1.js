@@ -61,16 +61,16 @@ router.post('/verify-email', [maintenanceMode], userEmailVerification)
 router.post('/verify-mobile', [maintenanceMode], userMobileVerification)
 router.post('/forgot-password', [maintenanceMode], forgotPassword)
 router.post('/change-password', [authMiddleware], changePassword)
-router.post('/edit-profile', formidableMiddleware(), [authMiddleware], editProfile)
+router.post('/edit-profile', [authMiddleware], editProfile)
 router.post('/verify-new-email', formidableMiddleware(), [maintenanceMode], verifyNewEmail)
 router.post('/verify-new-mobile', formidableMiddleware(), [authMiddleware], verifyNewMobile)
 router.get('/my-details', formidableMiddleware(), [authMiddleware], myDetails)
 
 
 //KYC Module
-router.post('/submit-kyc', formidableMiddleware(), [authMiddleware], kycAdd)
-router.get('/my-kyc-details', formidableMiddleware(), [authMiddleware], kycDetails)
-router.post('/update-kyc', formidableMiddleware(), [authMiddleware], updateKyc)
+router.post('/submit-kyc', [authMiddleware], kycAdd)
+router.get('/my-kyc-details', [authMiddleware], kycDetails)
+router.post('/update-kyc', [authMiddleware], updateKyc)
 
 //Pods Module
 router.get('/all-pods-list', allPodsList)

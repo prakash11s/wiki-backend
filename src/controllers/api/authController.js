@@ -80,8 +80,8 @@ module.exports = {
                                     Constants.FAIL
                                 )
                             } else {
-                                const mobile_otp = await Helper.makeRandomDigit(4)
-                                const email_otp = await Helper.makeRandomDigit(6)
+                                const mobile_otp = '123456'//await Helper.makeRandomDigit(4)
+                                const email_otp = '123456'//await Helper.makeRandomDigit(6)
                                 const pass = await bcrypt.hash(requestParams.password, 10)
                                 const minutesLater = new Date()
                                 const emailExpiry = minutesLater.setMinutes(minutesLater.getMinutes() + 30)
@@ -160,7 +160,9 @@ module.exports = {
                 User.findOne({
                     where: {
                         email: requestParams.email,
-                        status: {$ne: Constants.DELETE}
+                        status: {
+                            [Op.ne]: Constants.DELETE
+                        }
                     }
                 }).then((tokenExists) => {
                     if (tokenExists) {
@@ -213,12 +215,15 @@ module.exports = {
             if (validate) {
                 User.findOne({
                     where: {
-                        mobile: requestParams.email,
-                        status: {$ne: Constants.DELETE}
+                        mobile: requestParams.mobile,
+                        status: {
+                            [Op.ne]: Constants.DELETE
+                        }
                     }
                 }).then((tokenExists) => {
+                    console.log(tokenExists);
                     if (tokenExists) {
-                        if (parseInt(requestParams.otp) === parseInt(tokenExists.email_otp)) {
+                        if (parseInt(requestParams.otp) === parseInt(tokenExists.mobile_otp)) {
                             if (tokenExists.mobile_otp_expiry > Date.now()) {
                                 if (tokenExists.is_mobile_verified === Constants.NOT_VERIFIED) {
                                     const Verification = {
@@ -233,11 +238,11 @@ module.exports = {
                                         if (update) {
                                             return Response.successResponseData(res, null, Constants.SUCCESS, res.locals.__('mobileVerificationSuccess'));
                                         } else {
-                                            Response.errorResponseData(res, res.locals.__('somethingWentWrong'), FAIL);
+                                            Response.errorResponseData(res, res.locals.__('somethingWentWrong'), Constants.FAIL);
                                         }
                                     });
                                 } else {
-                                    Response.successResponseWithoutData(res, res.locals.__('emailAlreadyVerified'), Constants.FAIL);
+                                    Response.successResponseWithoutData(res, res.locals.__('mobileAlreadyVerfied'), Constants.FAIL);
                                 }
                             } else {
                                 Response.successResponseWithoutData(res, res.locals.__('otpExpired'), Constants.FAIL);
@@ -246,9 +251,10 @@ module.exports = {
                             Response.successResponseWithoutData(res, res.locals.__('wrongOTPEntered'), Constants.FAIL);
                         }
                     } else {
-                        Response.successResponseWithoutData(res, res.locals.__('emailNotValid'), Constants.FAIL);
+                        Response.successResponseWithoutData(res, res.locals.__('mobileNumberNotValid'), Constants.FAIL);
                     }
                 }, (err) => {
+                    console.log(err)
                     Response.errorResponseData(res, res.__('internalError'), Constants.INTERNAL_SERVER);
                 });
             }
@@ -593,7 +599,9 @@ module.exports = {
                     )
                 } else {
                     let image = false
+                    console.log(req.files.profile_image)
                     if (req.files.profile_image && req.files.profile_image.size > 0) {
+                        console.log("here")
                         image = true
                         await Helper.imageValidation(req, res, req.files.profile_image)
                         await Helper.imageSizeValidation(req, res, req.files.profile_image.size)
@@ -608,8 +616,7 @@ module.exports = {
                         })
                         .then(async (profileData) => {
                             if (profileData) {
-                                const otp = await Helper.makeRandomDigit(4)
-                                console.log("hello", profileData.mobile !== requestParams.mobile)
+                                const otp = '1234'//await Helper.makeRandomDigit(4)
                                 if (profileData.mobile !== requestParams.mobile || profileData.email !== requestParams.email) {
                                     await User.findOne({
                                         where: {

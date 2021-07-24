@@ -61,5 +61,14 @@
 	"emailVerificationValidationOtpRequired": "emailVerificationValidationOtpRequired",
 	"mobileVerificationValidationOtpRequired": "mobileVerificationValidationOtpRequired",
 	"Pod Booking Add Successfully": "Pod Booking Add Successfully",
-	"internalError1": "internalError1"
+	"internalError1": "internalError1",
+	"emailNotValid": "emailNotValid",
+	"mobileNumberNotValid": "mobileNumberNotValid",
+	"wrongOTPEntered": "wrongOTPEntered",
+	"emailAlreadyVerified": "emailAlreadyVerified",
+	"mobileVerificationSuccess": "mobileVerificationSuccess",
+	"noKYCFound": "noKYCFound",
+	"kycValidationDobRequired": "kycValidationDobRequired",
+	"kycValidationAddressMin": "kycValidationAddressMin",
+	"KYCUpdatedSuccessfully": "KYCUpdatedSuccessfully"
 }

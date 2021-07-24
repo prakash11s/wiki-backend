@@ -60,12 +60,13 @@ module.exports = {
   kycValidation: (req, res, callback) => {
     const schema = Joi.object({
       first_name: Joi.string().trim().required(),
+      middle_name: Joi.string().trim().required(),
       last_name: Joi.string().trim().required(),
-      dob: Joi.string().trim().required(),
+      date_of_birth: Joi.string().trim().required(),
       address: Joi.string().trim().min(10).required(),
       city: Joi.string().trim().required(),
       state: Joi.string().trim().required(),
-      zipcode: Joi.string().trim().required(),
+      pin_code: Joi.string().trim().required(),
       photo_id_proof: Joi.string().trim().optional(),
       photo_id_image: Joi.string().trim().optional(),
     })

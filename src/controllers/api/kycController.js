@@ -8,6 +8,7 @@ const {
 } = require('../../services/UserValidation')
 const {userKycDetails} = require('../../transformers/api/UserTransformer')
 const {User, userKYC} = require('../../models')
+const path = require('path')
 
 
 module.exports = {
@@ -19,12 +20,13 @@ module.exports = {
      * @returns {Promise<void>}
      */
     kycAdd: async (req, res) => {
+        const userId = req.authUserId
         const requestParams = req.fields
         let image = false
         kycValidation(requestParams, res, async (validate) => {
             if (validate) {
                 const time = moment().unix()
-                if (req.files.photo_id_image && req.files.address_image) {
+                if (req.files.photo_id_image && req.files.photo_id_image.size > 0) {
                     image = true
                     await Helper.imageValidation(req, res, req.files.photo_id_image)
                     await Helper.imageSizeValidation(req, res, req.files.photo_id_image.size)
@@ -37,13 +39,15 @@ module.exports = {
                 }
                 const photoIDImage = image ? `${time}${path.extname(req.files.photo_id_image.name)}` : ''
                 const userKycObj = {
-                    firstName: requestParams.firstName,
-                    lastName: requestParams.lastName,
-                    dob: requestParams.dob,
+                    user_id : userId,
+                    first_name: requestParams.first_name,
+                    middle_name: requestParams.middle_name,
+                    last_name: requestParams.last_name,
+                    date_of_birth: requestParams.date_of_birth,
                     address: requestParams.address,
                     city: requestParams.city,
                     state: requestParams.state,
-                    zipcode: requestParams.zipcode,
+                    pin_code: requestParams.pin_code
                 }
                 if (image) {
                     userKycObj.photo_id_proof = requestParams.photo_id_proof
@@ -61,8 +65,8 @@ module.exports = {
                                 Constants.SUCCESS,
                             )
                         }
-                    })
-                    .catch(async (e) => {
+                    }).catch(async (e) => {
+                        console.log(e)
                         Response.errorResponseData(
                             res,
                             res.__('internalError'),
@@ -87,7 +91,7 @@ module.exports = {
         kycValidation(requestParams, res, async (validate) => {
             if (validate) {
                 const time = moment().unix()
-                if (req.files.photo_id_image && requestParams.photo_id_proof && requestParams.photo_id_proof !== '') {
+                if (req.files.photo_id_image && req.files.photo_id_image.size > 0) {
                     image = true
                     await Helper.imageValidation(req, res, req.files.photo_id_image)
                     await Helper.imageSizeValidation(req, res, req.files.photo_id_image.size)
@@ -105,31 +109,30 @@ module.exports = {
                     }
                 }).then(async (result) => {
                     if (result) {
-                        result.firstName = requestParams.firstName
-                        result.lastName = requestParams.lastName
-                        result.dob = requestParams.dob
+                        const oldImageName = result.photo_id_image
+                        result.first_name = requestParams.first_name
+                        result.last_name = requestParams.last_name
+                        result.date_of_birth = requestParams.date_of_birth
                         result.address = requestParams.address
                         result.city = requestParams.city
                         result.state = requestParams.state
-                        result.zipcode = requestParams.zipcode
+                        result.pin_code = requestParams.pin_code
                         if (image) {
                             result.photo_id_proof = requestParams.photo_id_proof
                             result.photo_id_image = photoIDImage
                         }
                         await result.save()
-                        const oldImageName = result.photo_id_image
                         if (image) {
-                            await Helper.uploadImage(req.files.photo_id_image, Constants.PHOTO_IMAGE, photoIDImage)
-                            await Helper.removeOldImage(oldImageName, Constants.PHOTO_IMAGE, res)
+                            console.log(await Helper.uploadImage(req.files.photo_id_image, Constants.PHOTO_IMAGE, photoIDImage))
+                            console.log(await Helper.removeOldImage(oldImageName, Constants.PHOTO_IMAGE, res))
                         }
                         Response.successResponseWithoutData(
                             res,
-                            res.__('KYCAddedSuccessfully.'),
+                            res.__('KYCUpdatedSuccessfully'),
                             Constants.SUCCESS,
                         )
                     }
-                })
-                    .catch(async (e) => {
+                }).catch(async (e) => {
                         Response.errorResponseData(
                             res,
                             res.__('internalError'),
@@ -162,6 +165,8 @@ module.exports = {
                 }
             }).then(async (result) => {
                 if (result) {
+                    console.log(result)
+                    result.photo_id_image = Helper.mediaUrl(Constants.PHOTO_IMAGE, result.photo_id_image)
                     return Response.successResponseData(
                         res,
                         new Transformer.Single(result, userKycDetails).parse(),
@@ -173,7 +178,7 @@ module.exports = {
                         res,
                         {},
                         Constants.SUCCESS,
-                        res.__('noDataFound')
+                        res.__('noKYCFound')
                     )
                 }
             })
