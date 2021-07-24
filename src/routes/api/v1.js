@@ -43,7 +43,13 @@ const {
 
 const {getUserAccountBalance} = require("../../controllers/api/accountController");
 
-const {registerNewTransaction, getAllTransactions} = require("../../controllers/api/transactionController");
+const {
+    registerNewTransaction,
+    getAllTransactions,
+    registerPurchaseHoursTransaction
+} = require("../../controllers/api/transactionController");
+
+const {getPurchaseHoursList} = require("../../controllers/api/purchaseHoursController");
 
 const authMiddleware = (() => {
     const chain = connect()
@@ -91,11 +97,15 @@ router.post("/book-terrace-pod", [authMiddlewareWithoutFormidable], terracePodsB
 //Membership
 router.get("/get-membership-details", getAllMemberships)
 
+//Purchase Hours
+router.get("/get-purchase-hours-list", getPurchaseHoursList);
+
 //Account
 router.get("/get-account-balance", formidableMiddleware(), [authMiddleware], getUserAccountBalance)
 
 //Transaction
 router.post("/register-transaction", [authMiddlewareWithoutFormidable], registerNewTransaction);
+router.post("/register-purchase-hours-transaction", [authMiddlewareWithoutFormidable],registerPurchaseHoursTransaction);
 router.get("/get-user-transaction", [authMiddlewareWithoutFormidable], getAllTransactions);
 
 
