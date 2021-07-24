@@ -29,7 +29,7 @@ module.exports = {
                 comment: '0-success, 1-failed, 2-pending'
             },
             product: {
-                type: Sequelize.INTEGER,
+                type: Sequelize.STRING(30),
             },
             product_id: {
                 type: Sequelize.INTEGER,

@@ -101,9 +101,11 @@ module.exports = {
      * @returns {Promise<{data: *, meta: {message: *, code: *}}>}
      */
     podsBooking: async (req, res) => {
+        //TODO: Pod Booking in Array Concept Add
+
         const requestParams = req.body;
         const user_id = req.authUserId;
-        console.log(user_id);
+        // console.log(user_id);
 
         //TODO: Check User Information
         const pod_id = requestParams.pod_id;

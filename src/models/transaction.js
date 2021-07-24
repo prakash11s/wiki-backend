@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
             comment: '0-success, 1-failed, 2-pending'
         },
         product: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING(30),
         },
         product_id: {
             type: DataTypes.INTEGER,

@@ -59,5 +59,7 @@
 	"loginPasswordValidationPasswordEmpty": "loginPasswordValidationPasswordEmpty",
 	"pleaseVerifyYourEmailAndMobileFirst": "pleaseVerifyYourEmailAndMobileFirst",
 	"emailVerificationValidationOtpRequired": "emailVerificationValidationOtpRequired",
-	"mobileVerificationValidationOtpRequired": "mobileVerificationValidationOtpRequired"
+	"mobileVerificationValidationOtpRequired": "mobileVerificationValidationOtpRequired",
+	"Pod Booking Add Successfully": "Pod Booking Add Successfully",
+	"internalError1": "internalError1"
 }

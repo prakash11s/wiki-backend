@@ -35,6 +35,10 @@ const {
     getAllMemberships
 } = require("../../controllers/api/membershipController");
 
+const {getUserAccountBalance} = require("../../controllers/api/accountController");
+
+const {registerNewTransaction, getAllTransactions} = require("../../controllers/api/transactionController");
+
 const authMiddleware = (() => {
     const chain = connect()
     ;[formidableMiddleware(), apiTokenAuth].forEach((middleware) => {
@@ -71,10 +75,17 @@ router.post('/update-kyc', formidableMiddleware(), [authMiddleware], updateKyc)
 //Pods Module
 router.get('/all-pods-list', allPodsList)
 router.get('/get-pods-details', podsDetails)
-router.post("/book-pod", formidableMiddleware(),[authMiddleware], podsBooking);
+router.post("/book-pod", formidableMiddleware(), [authMiddleware], podsBooking);
 
 //Membership
 router.get("/get-membership-details", getAllMemberships)
+
+//Account
+router.get("/get-account-balance", formidableMiddleware(), [authMiddleware], getUserAccountBalance)
+
+//Transaction
+router.post("/register-transaction", [authMiddlewareWithoutFormidable], registerNewTransaction);
+router.get("/get-user-transaction", [authMiddlewareWithoutFormidable], getAllTransactions);
 
 
 module.exports = router
