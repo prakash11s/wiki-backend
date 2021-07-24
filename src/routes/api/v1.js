@@ -32,6 +32,12 @@ const {
 } = require('../../controllers/api/podsContoller')
 
 const {
+    allTerracePodsList,
+    terracePodsDetails,
+    terracePodsBooking
+} = require('../../controllers/api/terraceController')
+
+const {
     getAllMemberships
 } = require("../../controllers/api/membershipController");
 
@@ -76,6 +82,11 @@ router.post('/update-kyc', formidableMiddleware(), [authMiddleware], updateKyc)
 router.get('/all-pods-list', allPodsList)
 router.get('/get-pods-details', podsDetails)
 router.post("/book-pod", [authMiddlewareWithoutFormidable], podsBooking);
+
+//Terrace Pods Module
+router.get('/all-terrace-pods-list', allTerracePodsList)
+router.get('/get-terrace-pods-details', terracePodsDetails)
+router.post("/book-terrace-pod", [authMiddlewareWithoutFormidable], terracePodsBooking);
 
 //Membership
 router.get("/get-membership-details", getAllMemberships)

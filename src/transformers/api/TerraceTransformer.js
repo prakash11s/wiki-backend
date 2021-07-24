@@ -1,13 +1,13 @@
 module.exports = {
 
-    podsList: {
+    terracePodsList: {
         id: 'id',
         name: 'name',
         type: 'type',
         price: 'price',
     },
 
-    podsDetailsList: {
+    terracePodsDetailsList: {
         start_time: 'start_time',
         end_time: 'end_time',
     }
