@@ -33,9 +33,13 @@ module.exports = {
             }
             return Response.successResponseData(
                 res,
-                [],
+                {
+                    individual_hrs : 0,
+                    group_pod_hrs : 0,
+                    terrace_hrs : 0,
+                },
                 Constants.SUCCESS,
-                res.__('noDataFound')
+                res.locals.__('success'),
             )
         })
     }

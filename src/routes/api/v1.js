@@ -75,7 +75,7 @@ router.post('/update-kyc', formidableMiddleware(), [authMiddleware], updateKyc)
 //Pods Module
 router.get('/all-pods-list', allPodsList)
 router.get('/get-pods-details', podsDetails)
-router.post("/book-pod", formidableMiddleware(), [authMiddleware], podsBooking);
+router.post("/book-pod", [authMiddlewareWithoutFormidable], podsBooking);
 
 //Membership
 router.get("/get-membership-details", getAllMemberships)

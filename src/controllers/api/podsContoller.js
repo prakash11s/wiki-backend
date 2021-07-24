@@ -5,8 +5,8 @@ const Constants = require('../../services/Constants')
 const Helper = require('../../services/Helper')
 const moment = require('moment')
 const {} = require('../../services/UserValidation')
-const {podsList} = require('../../transformers/api/PodsTransformer')
-const {Pods, User, podBookings} = require('../../models')
+const {podsList, podsDetailsList} = require('../../transformers/api/PodsTransformer')
+const {Pods, User, podBookings, Transaction, userAccount} = require('../../models')
 
 
 module.exports = {
@@ -113,6 +113,15 @@ module.exports = {
         const start_time = requestParams.start_time;
         const end_time = requestParams.end_time;
         const booking_hours = requestParams.booking_hours;
+        let podDetails = {};
+
+        await Pods.findOne({
+            where: {
+                id: pod_id
+            },
+        }).then(async data => {
+            podDetails = data.dataValues;
+        })
 
         //TODO: Insert New Order Into Tabel
         await podBookings.create({
@@ -124,12 +133,52 @@ module.exports = {
             booking_hours,
         }).then(async (result) => {
             if (result) {
-                // console.log(result);
-                return Response.successResponseWithoutData(
-                    res,
-                    res.__('Pod Booking Add Successfully'),
-                    Constants.SUCCESS
-                )
+                await userAccount.findOne({ //GET User Existing Balance
+                    where: {
+                        user_id
+                    }
+                }).then(async (userData) => {
+                    const userAccountResult = userData.dataValues;
+                    let query = {}
+                    //Update Hours
+                    if (podDetails.type === "group") {
+                        query = {
+                            group_pod_hrs: userAccountResult.group_pod_hrs - parseInt(booking_hours),
+                        }
+                    } else {
+                        query = {
+                            individual_hrs: userAccountResult.individual_hrs - parseInt(booking_hours),
+                        }
+                    }
+
+                    await userAccount.update(query, { //Update User Existing Balance
+                        where: {
+                            user_id
+                        }
+                    }).then(async () => {
+                        await Transaction.create({ //Transaction IN ADD
+                            user_id,
+                            transaction_type: 1,
+                            status: 0,
+                            product: podDetails.name,
+                            product_id: podDetails.id,
+                            transaction: booking_hours
+                        }).then(() => {
+                            return Response.successResponseWithoutData(
+                                res,
+                                res.__('Pod Booking Add Successfully'),
+                                Constants.SUCCESS
+                            )
+                        }).catch(e => {
+                            throw e
+                        });
+                    }).catch(err => {
+                        throw err
+                    });
+
+                }).catch(err => {
+                    throw err
+                });
             }
         }).catch((e) => {
             return Response.errorResponseData(
