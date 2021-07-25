@@ -80,7 +80,7 @@ module.exports = {
                                     Constants.FAIL
                                 )
                             } else {
-                                const mobile_otp = '123456'//await Helper.makeRandomDigit(4)
+                                const mobile_otp = '1234'//await Helper.makeRandomDigit(4)
                                 const email_otp = '123456'//await Helper.makeRandomDigit(6)
                                 const pass = await bcrypt.hash(requestParams.password, 10)
                                 const minutesLater = new Date()
@@ -96,6 +96,10 @@ module.exports = {
                                     email_otp,
                                     mobile_otp_expiry: mobileExpiry,
                                     email_otp_expiry: emailExpiry,
+                                }
+                                if(requestParams.social_data){
+                                    UserObj.is_mobile_verified = true
+                                    UserObj.is_email_verified = true
                                 }
                                 //TODO: SEND_OTP
                                 if (!requestParams.social_data) {

@@ -27,7 +27,7 @@ module.exports = {
 
   userLoginValidation: (req, res, callback) => {
     const schema = Joi.object({
-      email: Joi.string().trim().email().required().regex(/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/),
+      email: Joi.string().trim().email().optional().regex(/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/),
       password: Joi.string().trim().optional(),
       social_id: Joi.string().trim(),
       access_token: Joi.string().trim(),
