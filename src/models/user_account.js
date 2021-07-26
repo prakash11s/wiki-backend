@@ -32,16 +32,20 @@ module.exports = (sequelize, DataTypes) => {
             references: {
                 model: 'membership',
                 key: 'id'
-            }
+            },
+            allowNull : true
         },
         individual_hrs: {
-            type: DataTypes.INTEGER
+            type: DataTypes.INTEGER,
+            defaultValue : 0
         },
         group_pod_hrs: {
-            type: DataTypes.INTEGER
+            type: DataTypes.INTEGER,
+            defaultValue : 0
         },
         terrace_hrs: {
-            type: DataTypes.INTEGER
+            type: DataTypes.INTEGER,
+            defaultValue : 0
         }
     }, {
         sequelize,

@@ -126,6 +126,10 @@ module.exports = {
                                 }
                                 await User.create(UserObj).then(async (result) => {
                                     if (result) {
+                                        const socialObj = {
+                                            user_id : result.id
+                                        }
+                                        await userSocial.create(socialObj)
                                         if (requestParams.social_data) {
                                             const userSocialAuthMeta = await getSocialAuthType(requestParams, result)
                                             await userSocial.create(userSocialAuthMeta)
