@@ -82,7 +82,7 @@ module.exports = {
                             } else {
                                 const mobile_otp = '1234'//await Helper.makeRandomDigit(4)
                                 const email_otp = '123456'//await Helper.makeRandomDigit(6)
-                                const pass = await bcrypt.hash(requestParams.password, 10)
+                                const pass = requestParams.password ? await bcrypt.hash(requestParams.password, 10) : ''
                                 const minutesLater = new Date()
                                 const emailExpiry = minutesLater.setMinutes(minutesLater.getMinutes() + 30)
                                 const mobileExpiry = minutesLater.setMinutes(minutesLater.getMinutes() + 15)
