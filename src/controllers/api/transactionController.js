@@ -215,9 +215,9 @@ module.exports = {
                 if (purchaseHoursDetails.name === "INDIVIDUAL PODS") {
                     userAccountCreateData.individual_hrs = userAccountResult.dataValues.individual_hrs + (purchaseHoursDetails.hours * number_of_item);
                 } else if (purchaseHoursDetails.name === "GROUP PODS") {
-                    userAccountCreateData.group_pod_hrs = userAccountResult.dataValues.individual_hrs + (purchaseHoursDetails.hours * number_of_item);
+                    userAccountCreateData.group_pod_hrs = userAccountResult.dataValues.group_pod_hrs + (purchaseHoursDetails.hours * number_of_item);
                 } else if (purchaseHoursDetails.name === "TERRACE") {
-                    userAccountCreateData.terrace_hrs = userAccountResult.dataValues.individual_hrs + (purchaseHoursDetails.hours * number_of_item);
+                    userAccountCreateData.terrace_hrs = userAccountResult.dataValues.terrace_hrs + (purchaseHoursDetails.hours * number_of_item);
                 }
 
                 await userAccount.update(userAccountCreateData, {
