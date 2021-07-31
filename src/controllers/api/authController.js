@@ -20,7 +20,7 @@ const {
     mobileVerificationValidation
 } = require('../../services/UserValidation')
 const {Login, userDetails} = require('../../transformers/api/UserTransformer')
-const {User, userSocial} = require('../../models')
+const {User, userSocial, userAccounts} = require('../../models')
 const {issueUser} = require('../../services/jwtTokenForUser')
 const {Op} = require('sequelize')
 const path = require('path')
@@ -97,7 +97,7 @@ module.exports = {
                                     mobile_otp_expiry: mobileExpiry,
                                     email_otp_expiry: emailExpiry,
                                 }
-                                if(requestParams.social_data){
+                                if (requestParams.social_data) {
                                     UserObj.is_mobile_verified = true
                                     UserObj.is_email_verified = true
                                 }
@@ -127,18 +127,25 @@ module.exports = {
                                 await User.create(UserObj).then(async (result) => {
                                     if (result) {
                                         const socialObj = {
-                                            user_id : result.id
+                                            user_id: result.id
                                         }
-                                        await userSocial.create(socialObj)
-                                        if (requestParams.social_data) {
-                                            const userSocialAuthMeta = await getSocialAuthType(requestParams, result)
-                                            await userSocial.create(userSocialAuthMeta)
-                                        }
-                                        return Response.successResponseWithoutData(
-                                            res,
-                                            res.__('userRegistrationSuccessful'),
-                                            Constants.SUCCESS
-                                        )
+                                        await userAccount.create(socialObj).then(async (accountData) => {
+                                            if (requestParams.social_data) {
+                                                const userSocialAuthMeta = await getSocialAuthType(requestParams, result)
+                                                await userSocial.create(userSocialAuthMeta)
+                                            }
+                                            return Response.successResponseWithoutData(
+                                                res,
+                                                res.__('userRegistrationSuccessful'),
+                                                Constants.SUCCESS
+                                            )
+                                        }).catch((e) => {
+                                            return Response.errorResponseData(
+                                                res,
+                                                res.__('internalError'),
+                                                Constants.INTERNAL_SERVER
+                                            )
+                                        })
                                     }
                                 }).catch((e) => {
                                     return Response.errorResponseData(
@@ -615,13 +622,13 @@ module.exports = {
                         await Helper.imageSizeValidation(req, res, req.files.profile_image.size)
                     }
                     await User.findOne({
-                            where: {
-                                id: req.authUserId,
-                                status: {
-                                    [Op.ne]: Constants.DELETE
-                                }
+                        where: {
+                            id: req.authUserId,
+                            status: {
+                                [Op.ne]: Constants.DELETE
                             }
-                        })
+                        }
+                    })
                         .then(async (profileData) => {
                             if (profileData) {
                                 const otp = '1234'//await Helper.makeRandomDigit(4)
@@ -819,23 +826,23 @@ module.exports = {
                     }
                 }
             }).then(async (result) => {
-                    if (result) {
-                        result.profile_image = Helper.mediaUrl(Constants.USER_PROFILE_IMAGE, result.profile_image)
-                        return Response.successResponseData(
-                            res,
-                            new Transformer.Single(result, userDetails).parse(),
-                            Constants.SUCCESS,
-                            res.__('success')
-                        )
-                    } else {
-                        return Response.successResponseData(
-                            res,
-                            {},
-                            Constants.SUCCESS,
-                            res.__('noDataFound')
-                        )
-                    }
-                })
+                if (result) {
+                    result.profile_image = Helper.mediaUrl(Constants.USER_PROFILE_IMAGE, result.profile_image)
+                    return Response.successResponseData(
+                        res,
+                        new Transformer.Single(result, userDetails).parse(),
+                        Constants.SUCCESS,
+                        res.__('success')
+                    )
+                } else {
+                    return Response.successResponseData(
+                        res,
+                        {},
+                        Constants.SUCCESS,
+                        res.__('noDataFound')
+                    )
+                }
+            })
                 .catch(() => {
                     return Response.errorResponseData(
                         res,
