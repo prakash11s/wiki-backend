@@ -324,9 +324,9 @@ module.exports = {
   userChangeStatusValidation: (req, res, callback) => {
     const schema = Joi.object().keys({
       status: Joi.number()
-          .valid(Constants.ACTIVE, Constants.INACTIVE,  Constants.DELETE)
+          .valid(Constants.DELETE, Constants.ACTIVE, Constants.INACTIVE)
           .required(),
-      id: Joi.number().required()
+      ids: Joi.string().regex(/[0-9]$/)
     });
     const { error } = schema.validate(req);
     if (error) {
@@ -352,6 +352,21 @@ module.exports = {
       return Response.validationErrorResponseData(
           res,
           res.__(Helper.validationMessageKey('addEditUserValidation', error))
+      );
+    }
+    return callback(true);
+  },
+
+
+  KYCStatusUpdateValidation: (req, res, callback) => {
+    const schema = Joi.object().keys({
+      kyc_status : Joi.number().valid(Constants.VERIFIED, Constants.NOT_VERIFIED).required(),
+    });
+    const { error } = schema.validate(req);
+    if (error) {
+      return Response.validationErrorResponseData(
+          res,
+          res.__(Helper.validationMessageKey('KYCStatusUpdateValidation', error))
       );
     }
     return callback(true);

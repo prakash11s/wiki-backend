@@ -70,5 +70,10 @@
 	"noKYCFound": "noKYCFound",
 	"kycValidationDobRequired": "kycValidationDobRequired",
 	"kycValidationAddressMin": "kycValidationAddressMin",
-	"KYCUpdatedSuccessfully": "KYCUpdatedSuccessfully"
+	"KYCUpdatedSuccessfully": "KYCUpdatedSuccessfully",
+	"userUpdateStatusIdRequired": "userUpdateStatusIdRequired",
+	"UserDeleteSuccess": "UserDeleteSuccess",
+	"UserActiveSuccess": "UserActiveSuccess",
+	"UserDeActiveSuccess": "UserDeActiveSuccess",
+	"KYCStatusUpdateSuccess": "KYCStatusUpdateSuccess"
 }

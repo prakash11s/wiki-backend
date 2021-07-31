@@ -2,29 +2,39 @@ const router = require('express').Router()
 const formidableMiddleware = require('express-formidable')
 const connect = require('connect')
 const {
-  adminTokenAuth
+    adminTokenAuth
 } = require('../../middlewares/admin')
 const {
-  login,
-  forgotPassword,
-  changePassword
+    login,
+    forgotPassword,
+    changePassword
 } = require('../../controllers/admin/authController')
 const {
-  subAdminAddEdit,
-  subAdminList,
-  subAdminDetail,
-  subAdminUpdateStatus,
+    subAdminAddEdit,
+    subAdminList,
+    subAdminDetail,
+    subAdminUpdateStatus,
 } = require('../../controllers/admin/SubAdminController');
 const {
-  userList, userUpdateStatus,  userDetail
+    userList, userUpdateStatus, userDetail
 } = require('../../controllers/admin/UserController');
 
+const {userKycDetails , updateUserKYCStatus} = require('../../controllers/admin/KYCController')
+
 const authMiddleware = (() => {
-  const chain = connect()
+    const chain = connect()
     ;[formidableMiddleware(), adminTokenAuth].forEach((middleware) => {
-    chain.use(middleware)
-  })
-  return chain
+        chain.use(middleware)
+    })
+    return chain
+})()
+
+const authMiddlewareWithoutForm = (() => {
+    const chain = connect()
+    ;[adminTokenAuth].forEach((middleware) => {
+        chain.use(middleware)
+    })
+    return chain
 })()
 
 // LRF
@@ -39,8 +49,10 @@ router.get('/sub-admin/:id', formidableMiddleware(), authMiddleware, subAdminDet
 router.post('/sub-admin-update-status', formidableMiddleware(), authMiddleware, subAdminUpdateStatus);
 
 // user
-router.get('/user', formidableMiddleware(), authMiddleware, userList);
-router.post('/user-status', formidableMiddleware(), authMiddleware, userUpdateStatus);
-router.get('/user-detail/:id', formidableMiddleware(), authMiddleware,  userDetail);
+router.get('/user-list', formidableMiddleware(), authMiddleware, userList);
+router.post('/user-status-update', formidableMiddleware(), authMiddleware, userUpdateStatus);
+router.get('/user-detail/:id', formidableMiddleware(), authMiddleware, userDetail);
+router.get('/user-kyc/:user_id', formidableMiddleware(), authMiddleware, userKycDetails);
+router.post('/user-kyc-update/:user_id', authMiddlewareWithoutForm, updateUserKYCStatus);
 
 module.exports = router
