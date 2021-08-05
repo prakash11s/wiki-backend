@@ -19,6 +19,10 @@ const {
     userList, userUpdateStatus, userDetail
 } = require('../../controllers/admin/UserController');
 
+const {
+    addEditMembership, membershipList
+} = require('../../controllers/admin/MembershipController');
+
 const {userKycDetails , updateUserKYCStatus, kycList} = require('../../controllers/admin/KYCController')
 
 const authMiddleware = (() => {
@@ -55,5 +59,9 @@ router.get('/user-detail/:id', formidableMiddleware(), authMiddleware, userDetai
 router.get('/user-kyc/:user_id', formidableMiddleware(), authMiddleware, userKycDetails);
 router.get('/kyc-list', authMiddlewareWithoutForm, kycList);
 router.post('/user-kyc-update/:user_id', authMiddlewareWithoutForm, updateUserKYCStatus);
+
+//Membership
+router.post('/membership', authMiddlewareWithoutForm, addEditMembership);
+router.get('/membership-list', authMiddlewareWithoutForm, membershipList);
 
 module.exports = router

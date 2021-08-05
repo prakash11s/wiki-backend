@@ -75,5 +75,9 @@
 	"UserDeleteSuccess": "UserDeleteSuccess",
 	"UserActiveSuccess": "UserActiveSuccess",
 	"UserDeActiveSuccess": "UserDeActiveSuccess",
-	"KYCStatusUpdateSuccess": "KYCStatusUpdateSuccess"
+	"KYCStatusUpdateSuccess": "KYCStatusUpdateSuccess",
+	"addEditMembershipValidationNameUnknown": "addEditMembershipValidationNameUnknown",
+	"membershipAddedSuccessfully": "membershipAddedSuccessfully",
+	"addEditMembershipValidationIdBase": "addEditMembershipValidationIdBase",
+	"membershipUpdatedSuccessfully": "membershipUpdatedSuccessfully"
 }

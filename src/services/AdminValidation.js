@@ -372,4 +372,26 @@ module.exports = {
     return callback(true);
   },
 
+  addEditMembershipValidation: (req, res, callback) => {
+    const schema = Joi.object().keys({
+      id: Joi.string().optional(),
+      name: Joi.string().max(100).trim().required(),
+      price: Joi.number().required(),
+      individual_hrs: Joi.number().required(),
+      group_pod_hrs: Joi.number().required(),
+      terrace_hrs: Joi.number().required(),
+      individual_price: Joi.number().required(),
+      group_price: Joi.number().required(),
+      terrace_price: Joi.number().required()
+    });
+    const { error } = schema.validate(req);
+    if (error) {
+      return Response.validationErrorResponseData(
+          res,
+          res.__(Helper.validationMessageKey('addEditMembershipValidation', error))
+      );
+    }
+    return callback(true);
+  },
+
 }
