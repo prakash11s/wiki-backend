@@ -1,3 +1,5 @@
+// noinspection DuplicatedCode
+
 const {Op} = require('sequelize');
 const Transformer = require('object-transformer');
 const Constants = require('../../services/Constants');
@@ -95,5 +97,66 @@ module.exports = {
                 })
             }
         })
-    }
+    },
+
+
+    /**
+     * @description This Function is to Get All User's KYC List
+     * @param req
+     * @param res
+     * */
+    kycList: async (req, res) => {
+        const requestParams = req.query;
+        const limit = requestParams.per_page && requestParams.per_page > 0
+            ? parseInt(requestParams.per_page, 10)
+            : Constants.PER_PAGE;
+        const pageNo = requestParams.page && requestParams.page > 0
+            ? parseInt(requestParams.page, 10)
+            : 1;
+        const offset = (pageNo - 1) * limit;
+        let query = {};
+        if(requestParams.status && requestParams.status !== ''){
+        }
+        let sorting = [['createdAt', 'DESC']];
+        if (requestParams.order_by && requestParams.order_by !== '') {
+            sorting = [
+                [
+                    requestParams.order_by,
+                    requestParams.direction ? requestParams.direction : 'DESC'
+                ]
+            ];
+        }
+        await userKYC.findAndCountAll({
+            order: sorting,
+            offset,
+            limit,
+            distinct: true
+        }).then(async (data) => {
+                if (data.rows.length > 0) {
+                    const result = data.rows
+                    Object.keys(result).forEach((key) => {
+                        if ({}.hasOwnProperty.call(result, key)) {
+                            result[key].photo_id_image = Helper.mediaUrl(Constants.PHOTO_IMAGE, result[key].photo_id_image)
+                        }
+                    })
+                    const extra = [];
+                    extra.per_page = limit;
+                    extra.total = data.count;
+                    extra.page = pageNo;
+                    return Response.successResponseData(
+                        res,
+                        result,
+                        Constants.SUCCESS,
+                        res.locals.__('success'),
+                        extra
+                    );
+                }
+                return Response.successResponseData(
+                    res,
+                    [],
+                    Constants.SUCCESS,
+                    res.__('noDataFound')
+                );
+            });
+    },
 }

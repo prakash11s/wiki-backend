@@ -6,6 +6,8 @@ const Response = require('../../services/Response');
 const {
     userChangeStatusValidation
 } = require('../../services/AdminValidation');
+const {userList} = require('../../transformers/admin/UserTransformer')
+const Helper = require('../../services/Helper')
 
 module.exports = {
 
@@ -16,7 +18,6 @@ module.exports = {
      * */
     userList: async (req, res) => {
         const requestParams = req.query;
-        // eslint-disable-next-line no-unused-vars
         let search = false;
         const limit = requestParams.per_page && requestParams.per_page > 0
             ? parseInt(requestParams.per_page, 10)
@@ -77,37 +78,39 @@ module.exports = {
                 ]
             ];
         }
-
         await User.findAndCountAll({
             where: query,
             order: sorting,
             offset,
             limit,
             distinct: true
-        })
-            .then(async (data) => {
-                if (data.rows.length > 0) {
-                    const result = data.rows;
-
-                    const extra = [];
-                    extra.per_page = limit;
-                    extra.total = data.count;
-                    extra.page = pageNo;
-                    return Response.successResponseData(
-                        res,
-                        result,
-                        Constants.SUCCESS,
-                        res.locals.__('success'),
-                        extra
-                    );
-                }
+        }).then(async (data) => {
+            if (data.rows.length > 0) {
+                const result = data.rows;
+                Object.keys(result).forEach((key) => {
+                    if ({}.hasOwnProperty.call(result, key)) {
+                        result[key].profile_image = Helper.mediaUrl(Constants.USER_PROFILE_IMAGE, result[key].profile_image)
+                    }
+                })
+                const extra = [];
+                extra.per_page = limit;
+                extra.total = data.count;
+                extra.page = pageNo;
                 return Response.successResponseData(
                     res,
-                    [],
+                    new Transformer.List(result, userList).parse(),
                     Constants.SUCCESS,
-                    res.__('noDataFound')
+                    res.locals.__('success'),
+                    extra
                 );
-            });
+            }
+            return Response.successResponseData(
+                res,
+                [],
+                Constants.SUCCESS,
+                res.__('noDataFound')
+            );
+        });
     },
 
 

@@ -19,7 +19,7 @@ const {
     userList, userUpdateStatus, userDetail
 } = require('../../controllers/admin/UserController');
 
-const {userKycDetails , updateUserKYCStatus} = require('../../controllers/admin/KYCController')
+const {userKycDetails , updateUserKYCStatus, kycList} = require('../../controllers/admin/KYCController')
 
 const authMiddleware = (() => {
     const chain = connect()
@@ -53,6 +53,7 @@ router.get('/user-list', formidableMiddleware(), authMiddleware, userList);
 router.post('/user-status-update', formidableMiddleware(), authMiddleware, userUpdateStatus);
 router.get('/user-detail/:id', formidableMiddleware(), authMiddleware, userDetail);
 router.get('/user-kyc/:user_id', formidableMiddleware(), authMiddleware, userKycDetails);
+router.get('/kyc-list', authMiddlewareWithoutForm, kycList);
 router.post('/user-kyc-update/:user_id', authMiddlewareWithoutForm, updateUserKYCStatus);
 
 module.exports = router
