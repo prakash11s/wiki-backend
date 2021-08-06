@@ -20,7 +20,7 @@ const {
     mobileVerificationValidation
 } = require('../../services/UserValidation')
 const {Login, userDetails} = require('../../transformers/api/UserTransformer')
-const {User, userSocial, userAccounts} = require('../../models')
+const {User, userSocial, userAccount} = require('../../models')
 const {issueUser} = require('../../services/jwtTokenForUser')
 const {Op} = require('sequelize')
 const path = require('path')
@@ -140,6 +140,7 @@ module.exports = {
                                                 Constants.SUCCESS
                                             )
                                         }).catch((e) => {
+                                            console.log(e)
                                             return Response.errorResponseData(
                                                 res,
                                                 res.__('internalError'),
@@ -148,6 +149,7 @@ module.exports = {
                                         })
                                     }
                                 }).catch((e) => {
+                                    console.log(e)
                                     return Response.errorResponseData(
                                         res,
                                         res.__('internalError'),
