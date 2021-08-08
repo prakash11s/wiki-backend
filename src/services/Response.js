@@ -9,7 +9,7 @@ module.exports = {
      * @returns {{data: *, meta: {message: *, code: *}}}
      */
 
-  successResponseData (res, data, code = 1, message, extras) {
+  successResponseData (res, data, code, message, extras) {
     const response = {
       data,
       meta: {

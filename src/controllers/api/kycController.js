@@ -39,7 +39,7 @@ module.exports = {
                 }
                 const photoIDImage = image ? `${time}${path.extname(req.files.photo_id_image.name)}` : ''
                 const userKycObj = {
-                    user_id : userId,
+                    user_id: userId,
                     first_name: requestParams.first_name,
                     middle_name: requestParams.middle_name,
                     last_name: requestParams.last_name,
@@ -95,12 +95,6 @@ module.exports = {
                     image = true
                     await Helper.imageValidation(req, res, req.files.photo_id_image)
                     await Helper.imageSizeValidation(req, res, req.files.photo_id_image.size)
-                } else {
-                    return Response.errorResponseData(
-                        res,
-                        res.__('imageIsRequired'),
-                        Constants.BAD_REQUEST
-                    )
                 }
                 const photoIDImage = image ? `${time}${path.extname(req.files.photo_id_image.name)}` : ''
                 await userKYC.findOne({
@@ -117,8 +111,8 @@ module.exports = {
                         result.city = requestParams.city
                         result.state = requestParams.state
                         result.pin_code = requestParams.pin_code
+                        result.photo_id_proof = requestParams.photo_id_proof
                         if (image) {
-                            result.photo_id_proof = requestParams.photo_id_proof
                             result.photo_id_image = photoIDImage
                         }
                         await result.save()
@@ -131,14 +125,21 @@ module.exports = {
                             res.__('KYCUpdatedSuccessfully'),
                             Constants.SUCCESS,
                         )
+                    } else {
+                        return Response.successResponseData(
+                            res,
+                            {},
+                            Constants.SUCCESS,
+                            res.__('noKYCFound')
+                        )
                     }
                 }).catch(async (e) => {
-                        Response.errorResponseData(
-                            res,
-                            res.__('internalError'),
-                            Constants.INTERNAL_SERVER
-                        )
-                    })
+                    Response.errorResponseData(
+                        res,
+                        res.__('internalError'),
+                        Constants.INTERNAL_SERVER
+                    )
+                })
             }
         })
     },

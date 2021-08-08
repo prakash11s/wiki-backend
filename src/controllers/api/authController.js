@@ -103,7 +103,6 @@ module.exports = {
                                 }
                                 //TODO: SEND_OTP
                                 if (!requestParams.social_data) {
-                                    console.log("LLLLL")
                                     const locals = {
                                         username: requestParams.first_name,
                                         appName: Helper.AppName,
@@ -184,7 +183,7 @@ module.exports = {
                 }).then((tokenExists) => {
                     if (tokenExists) {
                         if (parseInt(requestParams.otp) === parseInt(tokenExists.email_otp)) {
-                            if (tokenExists.emai_otp_expiry > Date.now()) {
+                            if (tokenExists.email_otp_expiry >= Date.now()) {
                                 if (tokenExists.is_email_verified === Constants.NOT_VERIFIED) {
                                     const Verification = {
                                         is_email_verified: Constants.VERIFIED,
@@ -241,7 +240,7 @@ module.exports = {
                     console.log(tokenExists);
                     if (tokenExists) {
                         if (parseInt(requestParams.otp) === parseInt(tokenExists.mobile_otp)) {
-                            if (tokenExists.mobile_otp_expiry > Date.now()) {
+                            if (tokenExists.mobile_otp_expiry >= Date.now()) {
                                 if (tokenExists.is_mobile_verified === Constants.NOT_VERIFIED) {
                                     const Verification = {
                                         is_mobile_verified: Constants.VERIFIED,
@@ -353,10 +352,14 @@ module.exports = {
                                 meta
                             )
                         } else {
-                            return Response.successResponseWithoutData(
+                            user.created_at = Helper.dateTimeTimestamp(user.createdAt)
+                            user.updated_at = Helper.dateTimeTimestamp(user.updatedAt)
+                            user.profile_image = user.profile_image ? Helper.mediaUrl(Constants.USER_PROFILE_IMAGE, user.profile_image) : ''
+                            return Response.successResponseData(
                                 res,
-                                res.locals.__('pleaseVerifyYourEmailAndMobileFirst'),
-                                Constants.FAIL
+                                new Transformer.Single(user, Login).parse(),
+                                Constants.FAIL,
+                                res.locals.__('pleaseVerifyYourEmailAndMobile'),
                             )
                         }
                     } else {
@@ -616,9 +619,7 @@ module.exports = {
                     )
                 } else {
                     let image = false
-                    console.log(req.files.profile_image)
                     if (req.files.profile_image && req.files.profile_image.size > 0) {
-                        console.log("here")
                         image = true
                         await Helper.imageValidation(req, res, req.files.profile_image)
                         await Helper.imageSizeValidation(req, res, req.files.profile_image.size)
@@ -991,9 +992,7 @@ const checkSocialID = async (socialId, res) => {
         }
     }).then((data) => {
         if (data) {
-            console.log("LLLLLL....1")
             if (data.name === 'GOOGLE') {
-                console.log("LLLLLL....2")
                 return Response.socialError(res, res.locals.__('socialAccountAlreadyExistWithGoogle'), Constants.ACCOUNT_TYPE.GOOGLE)
             } else if (data.name === 'FACEBOOK') {
                 return Response.socialError(res, res.locals.__('socialAccountAlreadyExistWithFacebook'), Constants.ACCOUNT_TYPE.FACEBOOK)

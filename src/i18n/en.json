@@ -79,5 +79,9 @@
 	"addEditMembershipValidationNameUnknown": "addEditMembershipValidationNameUnknown",
 	"membershipAddedSuccessfully": "membershipAddedSuccessfully",
 	"addEditMembershipValidationIdBase": "addEditMembershipValidationIdBase",
-	"membershipUpdatedSuccessfully": "membershipUpdatedSuccessfully"
+	"membershipUpdatedSuccessfully": "membershipUpdatedSuccessfully",
+	"verificationSuccess": "verificationSuccess",
+	"mobileVerificationValidationMobileRequired": "mobileVerificationValidationMobileRequired",
+	"pleaseVerifyYourEmailAndMobile": "pleaseVerifyYourEmailAndMobile",
+	"userRegisterValidationMobileMin": "userRegisterValidationMobileMin"
 }
