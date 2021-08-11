@@ -296,7 +296,9 @@ module.exports = {
                 } else {
                     user = await getUserBySocial(reqParam.social_id)
                     if (!user) {
-                        user = await getUserByEmail(reqParam.email)
+                        if (reqParam.email) {
+                            user = await getUserByEmail(reqParam.email)
+                        }
                         if (user) {
                             Response.socialError(res, res.locals.__('AccountAlreadyExist'), Constants.ACCOUNT_TYPE.LOCAL)
                         }
