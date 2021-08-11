@@ -2,6 +2,7 @@ const path = require('path')
 const fs = require('fs')
 const Response = require('../services/Response')
 const Constants = require('../services/Constants')
+const {s3} = require('../Config/aws');
 const Jimp = require('jimp')
 const moment = require('moment')
 const {UserDeviceToken} = require('../models')
@@ -272,24 +273,59 @@ module.exports = {
         }
     },
 
+    uploadMediaToS3: async (fileName, filePath, storagePath, req, res) =>
+        new Promise(async (resolve, reject) => {
+            await fs.readFile(filePath, function (err, data) {
+                const params = {
+                    Bucket: process.env.AMZ_BUCKET,
+                    Body: data,
+                    Key: `${storagePath}/${fileName}`,
+                    ACL: 'public-read',
+                }
+                s3.putObject(params, function (perr, pres) {
+                    if (perr) {
+                        console.log(perr)
+                        reject(perr)
+                        return Response.errorResponseData(
+                            res,
+                            res.__('somethingWentWrong'),
+                            500
+                        )
+                    } else {
+                        console.log(pres)
+                        return resolve({
+                            code: 200,
+                            body: pres,
+                        })
+                    }
+                })
+            });
+            await fs.unlinkSync(filePath);
+        }),
 
-    unitConversion: (cases) => {
-        if (isNaN(cases)) return cases;
-        if (cases < 999) {
-            return cases;
-        }
-        if (cases < 1000000) {
-            return Math.round(cases / 1000) + "K";
-        }
-        if (cases < 10000000) {
-            return (cases / 1000000).toFixed(2) + "M";
-        }
-        if (cases < 1000000000) {
-            return Math.round((cases / 1000000)) + "M";
-        }
-        if (cases < 1000000000000) {
-            return Math.round((cases / 1000000000)) + "B";
-        }
-        return "1T+";
-    }
+    removeOldMediaOnS3: (file, storagePath, res) =>
+        new Promise((resolve, reject) => {
+            const params = {
+                Bucket: process.env.AMZ_BUCKET,
+                Key: `${storagePath}/${file}`,
+            }
+            try {
+                return s3.deleteObject(params, (err, data) => {
+                    if (data) {
+                        resolve({
+                            code: 200,
+                            body: data,
+                        })
+                    }
+                    reject(err)
+                })
+            } catch {
+                return Response.errorResponseData(
+                    res,
+                    res.__('somethingWentWrong'),
+                    500
+                )
+            }
+            return null
+        }),
 }
