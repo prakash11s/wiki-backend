@@ -80,7 +80,7 @@ module.exports = {
                                     Constants.FAIL
                                 )
                             } else {
-                                const mobile_otp = '1234'//await Helper.makeRandomDigit(4)
+                                const mobile_otp = await Helper.makeRandomDigit(4)
                                 const email_otp = '123456'//await Helper.makeRandomDigit(6)
                                 const pass = requestParams.password ? await bcrypt.hash(requestParams.password, 10) : ''
                                 const minutesLater = new Date()
@@ -125,6 +125,7 @@ module.exports = {
                                 }
                                 await User.create(UserObj).then(async (result) => {
                                     if (result) {
+                                        await Helper.sendOtp(requestParams.mobile, mobile_otp)
                                         const socialObj = {
                                             user_id: result.id
                                         }
@@ -662,8 +663,8 @@ module.exports = {
                                             const expiry = minutesLater.setMinutes(minutesLater.getMinutes() + 20);
                                             profileData.new_email = requestParams.email
                                             profileData.email_expiry = expiry
-                                            const otpSent = 200//await Helper.sendOTP(requestParams.country_code, requestParams.mobile, otp)
-                                            if (otpSent === 200) {
+                                            const otpSent = await Helper.sendOtp(requestParams.mobile, otp)
+                                            if (otpSent) {
                                                 profileData.otp = otp
                                                 profileData.otp_expiry = expiry
                                             } else {

@@ -6,6 +6,8 @@ const Jimp = require('jimp')
 const moment = require('moment')
 const {UserDeviceToken} = require('../models')
 const {Op} = require('sequelize')
+const axios = require('axios')
+const {MSG_91} = require('../config/msg91')
 
 module.exports = {
     AppName: 'Odessey',
@@ -87,34 +89,42 @@ module.exports = {
 
     /**
      * @description This function use for Creating OTP
-     * @param apiTag
-     * @param error
+     * @param mobile
+     * @param otp
+     * @param email
      * @return {*}
      */
-    sendOTP: (countryCode, mobile, otp) => {
-        const mob = `${countryCode}${mobile}`
-        return new Promise((resolve, reject) => {
-            Twilio.messages
-                .create({
-                    body: `CMS COV-ID verification OTP : ${otp}`,
-                    from: process.env.TWILIO_MOBILE,
-                    to: mob
-                })
-                .then((message) => {
-                    console.log(message.sid)
-                    return resolve({
-                        code: 200,
-                        message: 'sent'
+    sendOtp: async function (mobile, otp) {
+        if (process.env.GENERATE_AND_SEND_OTP === 'true') {
+            const config = {
+                method: 'get',
+                url:
+                    process.env.MSG91_API_BASE_URL +
+                    'otp?authkey=' +
+                    process.env.MSG91_AUTH_KEY +
+                    '&template_id=' +
+                    MSG_91.template_id +
+                    '&mobile=91' +
+                    mobile,
+                headers: {
+                    'content-type': 'application/json',
+                },
+                data: JSON.stringify({
+                    otp: otp,
+                }),
+            }
+            return new Promise((resolve) => {
+                axios(config)
+                    .then(async function () {
+                        resolve(true)
                     })
-                }).catch((e) => {
-                console.log(e)
-                return resolve({
-                    code: 400,
-                    message: e
-                })
+                    .catch(() => {
+                        resolve(false)
+                    })
             })
-            return null
-        })
+        } else {
+            return true
+        }
     },
 
     /**
