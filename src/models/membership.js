@@ -10,6 +10,7 @@ module.exports = (sequelize, DataTypes) => {
             })
         }
     }
+
     Membership.init({
         id: {
             allowNull: false,
@@ -34,14 +35,8 @@ module.exports = (sequelize, DataTypes) => {
         terrace_hrs: {
             type: DataTypes.INTEGER
         },
-        individual_price: {
-            type: DataTypes.INTEGER
-        },
-        group_price: {
-            type: DataTypes.INTEGER
-        },
-        terrace_price: {
-            type: DataTypes.INTEGER
+        perks: {
+            type: DataTypes.STRING
         }
     }, {
         sequelize,

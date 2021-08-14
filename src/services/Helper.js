@@ -338,4 +338,11 @@ module.exports = {
             }
             return null
         }),
+
+    mediaUrlForS3: (folder, name) => {
+        if (name && name !== '') {
+            return `${process.env.AMZ_BUCKET_URL}/${folder}/${name}`
+        }
+        return ''
+    },
 }

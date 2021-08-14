@@ -11,10 +11,14 @@ module.exports = {
         await Membership.findAndCountAll({
             where: query,
             order: sorting,
-        })
-            .then(async (data) => {
+        }).then(async (data) => {
                 if (data.rows.length > 0) {
                     const result = data.rows
+                    Object.keys(result).forEach((key) => {
+                        if ({}.hasOwnProperty.call(result, key)) {
+                            result[key].perks = result[key].perks.split(',');
+                        }
+                    })
                     return Response.successResponseData(
                         res,
                         new Transformer.List(result, allMemberShip).parse(),

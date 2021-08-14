@@ -3,7 +3,7 @@
 const {Op} = require('sequelize');
 const Transformer = require('object-transformer');
 const Constants = require('../../services/Constants');
-const {User, userKYC} = require('../../models');
+const {User, userKYC, userAccount} = require('../../models');
 const Response = require('../../services/Response');
 const Helper = require('../../services/Helper')
 const {userKycDetails} = require('../../transformers/admin/UserTransformer')
@@ -115,7 +115,7 @@ module.exports = {
             : 1;
         const offset = (pageNo - 1) * limit;
         let query = {};
-        if(requestParams.status && requestParams.status !== ''){
+        if (requestParams.status && requestParams.status !== '') {
         }
         let sorting = [['createdAt', 'DESC']];
         if (requestParams.order_by && requestParams.order_by !== '') {
@@ -130,33 +130,39 @@ module.exports = {
             order: sorting,
             offset,
             limit,
-            distinct: true
-        }).then(async (data) => {
-                if (data.rows.length > 0) {
-                    const result = data.rows
-                    Object.keys(result).forEach((key) => {
-                        if ({}.hasOwnProperty.call(result, key)) {
-                            result[key].photo_id_image = Helper.mediaUrl(Constants.PHOTO_IMAGE, result[key].photo_id_image)
-                        }
-                    })
-                    const extra = [];
-                    extra.per_page = limit;
-                    extra.total = data.count;
-                    extra.page = pageNo;
-                    return Response.successResponseData(
-                        res,
-                        result,
-                        Constants.SUCCESS,
-                        res.locals.__('success'),
-                        extra
-                    );
+            distinct: true,
+            include: [
+                {
+                    model: userAccount,
+                    attributes: ['mobile', 'email', 'profile_image', 'is_kyc_verified']
                 }
+            ]
+        }).then(async (data) => {
+            if (data.rows.length > 0) {
+                const result = data.rows
+                Object.keys(result).forEach((key) => {
+                    if ({}.hasOwnProperty.call(result, key)) {
+                        result[key].photo_id_image = Helper.mediaUrlForS3(Constants.KYC_IMAGE_PATH_S3, result[key].photo_id_image)
+                    }
+                })
+                const extra = [];
+                extra.per_page = limit;
+                extra.total = data.count;
+                extra.page = pageNo;
                 return Response.successResponseData(
                     res,
-                    [],
+                    result,
                     Constants.SUCCESS,
-                    res.__('noDataFound')
+                    res.locals.__('success'),
+                    extra
                 );
-            });
+            }
+            return Response.successResponseData(
+                res,
+                [],
+                Constants.SUCCESS,
+                res.__('noDataFound')
+            );
+        });
     },
 }

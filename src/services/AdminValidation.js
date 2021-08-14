@@ -242,7 +242,6 @@ module.exports = {
   },
 
   updateUserHealthStatusValidation: (req, res, callback) => {
-    console.log('==============', req)
     const schema = Joi.object({
       user_id: Joi.number().required(),
       health_status: Joi.number().valid(
@@ -380,9 +379,7 @@ module.exports = {
       individual_hrs: Joi.number().required(),
       group_pod_hrs: Joi.number().required(),
       terrace_hrs: Joi.number().required(),
-      individual_price: Joi.number().required(),
-      group_price: Joi.number().required(),
-      terrace_price: Joi.number().required()
+      perks: Joi.array().items(Joi.string()).optional(),
     });
     const { error } = schema.validate(req);
     if (error) {

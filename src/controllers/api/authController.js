@@ -238,7 +238,6 @@ module.exports = {
                         }
                     }
                 }).then((tokenExists) => {
-                    console.log(tokenExists);
                     if (tokenExists) {
                         if (parseInt(requestParams.otp) === parseInt(tokenExists.mobile_otp)) {
                             if (tokenExists.mobile_otp_expiry >= Date.now()) {
@@ -637,72 +636,72 @@ module.exports = {
                         }
                     }).then(async (profileData) => {
                         if (profileData) {
-                            const otp = '1234'//await Helper.makeRandomDigit(4)
-                            if (profileData.mobile !== requestParams.mobile || profileData.email !== requestParams.email) {
-                                await User.findOne({
-                                    where: {
-                                        mobile: requestParams.mobile,
-                                        id: {
-                                            [Op.ne]: req.authUserId
-                                        },
-                                        status: {
-                                            [Op.ne]: Constants.DELETE
-                                        }
-                                    }
-                                }).then(async (profileDetail) => {
-                                    if (profileDetail) {
-                                        return Response.successResponseWithoutData(
-                                            res,
-                                            res.__('NumberAlreadyExist'),
-                                            Constants.FAIL
-                                        )
-                                    } else {
-                                        profileData.new_mobile = requestParams.mobile
-                                        profileData.is_mobile_verified = Constants.NOT_VERIFIED
-                                        const minutesLater = new Date();
-                                        const expiry = minutesLater.setMinutes(minutesLater.getMinutes() + 20);
-                                        profileData.new_email = requestParams.email
-                                        profileData.email_expiry = expiry
-                                        const otpSent = await Helper.sendOtp(requestParams.mobile, otp)
-                                        if (otpSent) {
-                                            profileData.otp = otp
-                                            profileData.otp_expiry = expiry
-                                        } else {
-                                            return Response.errorResponseData(
-                                                res,
-                                                res.__('internalError'),
-                                                Constants.INTERNAL_SERVER
-                                            )
-                                        }
-                                    }
-                                    return null
-                                })
-                            }
+                            //const otp = '1234'//await Helper.makeRandomDigit(4)
+                            // if (profileData.mobile !== requestParams.mobile || profileData.email !== requestParams.email) {
+                            //     await User.findOne({
+                            //         where: {
+                            //             mobile: requestParams.mobile,
+                            //             id: {
+                            //                 [Op.ne]: req.authUserId
+                            //             },
+                            //             status: {
+                            //                 [Op.ne]: Constants.DELETE
+                            //             }
+                            //         }
+                            //     }).then(async (profileDetail) => {
+                            //         if (profileDetail) {
+                            //             return Response.successResponseWithoutData(
+                            //                 res,
+                            //                 res.__('NumberAlreadyExist'),
+                            //                 Constants.FAIL
+                            //             )
+                            //         } else {
+                            //             profileData.new_mobile = requestParams.mobile
+                            //             profileData.is_mobile_verified = Constants.NOT_VERIFIED
+                            //             const minutesLater = new Date();
+                            //             const expiry = minutesLater.setMinutes(minutesLater.getMinutes() + 20);
+                            //             profileData.new_email = requestParams.email
+                            //             profileData.email_expiry = expiry
+                            //             const otpSent = await Helper.sendOtp(requestParams.mobile, otp)
+                            //             if (otpSent) {
+                            //                 profileData.otp = otp
+                            //                 profileData.otp_expiry = expiry
+                            //             } else {
+                            //                 return Response.errorResponseData(
+                            //                     res,
+                            //                     res.__('internalError'),
+                            //                     Constants.INTERNAL_SERVER
+                            //                 )
+                            //             }
+                            //         }
+                            //         return null
+                            //     })
+                            // }
                             const unix = `${moment().unix()}${path.extname(req.files.profile_image.name)}`
                             profileData.first_name = requestParams.first_name
                             profileData.last_name = requestParams.last_name
                             profileData.address = requestParams.address
-                            profileData.profile_image = image ? unix : profileData.profile_image
-                            await profileData
-                                .save()
+                            if (image) {
+                                profileData.profile_image = image ? unix : profileData.profile_image
+                            }
+                            profileData.mobile = requestParams.mobile
+                            profileData.email = requestParams.email
+                            await profileData.save()
                                 .then(async (result) => {
                                     if (result) {
                                         if (image) {
-                                            result.profile_image = Helper.mediaUrl(
-                                                Constants.USER_PROFILE_IMAGE,
-                                                result.profile_image
-                                            )
+                                            result.profile_image = Helper.mediaUrlForS3(Constants.PROFILE_IMAGE_PATH_S3, profileData.profile_image)
                                             const locals = {
                                                 appName: Helper.AppName,
                                                 verification_code: otp,
                                                 link: `${process.env.API_URL}/reset-mobile-email?otp=${otp}`
                                             };
                                             const imageName = image ? unix : ''
-                                            await Helper.uploadImage(req.files.profile_image, Constants.USER_PROFILE_IMAGE, imageName)
+                                            //await Helper.uploadImage(req.files.profile_image, Constants.USER_PROFILE_IMAGE, imageName)
                                             await Helper.uploadMediaToS3(imageName, imagePath, Constants.PROFILE_IMAGE_PATH_S3, req, res)
-                                            await Mailer.sendMail(requestParams.email, 'Reset Your Odyssey mobile/email', Helper.welcomeTemplate, locals);
+                                            //await Mailer.sendMail(requestParams.email, 'Reset Your Odyssey mobile/email', Helper.welcomeTemplate, locals);
                                         } else {
-                                            result.profile_image = Helper.mediaUrl(Constants.USER_PROFILE_IMAGE, profileData.profile_image)
+                                            result.profile_image = Helper.mediaUrlForS3(Constants.PROFILE_IMAGE_PATH_S3, profileData.profile_image)
                                         }
                                         return Response.successResponseData(
                                             res,

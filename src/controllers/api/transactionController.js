@@ -55,7 +55,6 @@ module.exports = {
                     }
                 }).then(async (result) => {
                     if (result) {
-                        console.log(result)
                         //Add Transaction to DB
                         await Transaction.create({
                             user_id,

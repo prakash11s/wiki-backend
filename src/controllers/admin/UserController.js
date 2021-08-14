@@ -1,7 +1,7 @@
 const {Op} = require('sequelize');
 const Transformer = require('object-transformer');
 const Constants = require('../../services/Constants');
-const {User} = require('../../models');
+const {User, userAccount} = require('../../models');
 const Response = require('../../services/Response');
 const {
     userChangeStatusValidation
@@ -83,7 +83,13 @@ module.exports = {
             order: sorting,
             offset,
             limit,
-            distinct: true
+            distinct: true,
+            include: [
+                {
+                    model: userAccount,
+                    attributes: ['individual_hrs', 'group_pod_hrs', 'terrace_hrs']
+                }
+            ]
         }).then(async (data) => {
             if (data.rows.length > 0) {
                 const result = data.rows;
@@ -206,9 +212,9 @@ module.exports = {
                         [Op.in]: [Constants.ACTIVE, Constants.INACTIVE]
                     }
                 }
-            })
-                .then(async (result) => {
+            }).then(async (result) => {
                     if (result) {
+                        result.profile_image = Helper.mediaUrlForS3(Constants.USER_PROFILE_IMAGE, result.profile_image)
                         return Response.successResponseData(
                             res,
                             result,

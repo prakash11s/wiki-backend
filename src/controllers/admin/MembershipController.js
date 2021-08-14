@@ -26,9 +26,7 @@ module.exports = {
                     individual_hrs: requestParams.individual_hrs,
                     group_pod_hrs: requestParams.group_pod_hrs,
                     terrace_hrs: requestParams.terrace_hrs,
-                    individual_price: requestParams.individual_price,
-                    group_price: requestParams.group_price,
-                    terrace_price: requestParams.terrace_price
+                    perks: requestParams.perks.toString()
                 }
                 if (requestParams.id) {
                     await Membership.findOne({
@@ -89,7 +87,7 @@ module.exports = {
             : 1;
         const offset = (pageNo - 1) * limit;
         let query = {};
-        if(requestParams.status && requestParams.status !== ''){
+        if (requestParams.status && requestParams.status !== '') {
         }
         let sorting = [['createdAt', 'DESC']];
         if (requestParams.order_by && requestParams.order_by !== '') {
@@ -108,6 +106,11 @@ module.exports = {
         }).then(async (data) => {
             if (data.rows.length > 0) {
                 const result = data.rows
+                Object.keys(result).forEach((key) => {
+                    if ({}.hasOwnProperty.call(result, key)) {
+                        result[key].perks = result[key].perks.split(',');
+                    }
+                })
                 const extra = [];
                 extra.per_page = limit;
                 extra.total = data.count;

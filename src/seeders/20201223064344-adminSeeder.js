@@ -8,7 +8,7 @@ module.exports = {
         return queryInterface.bulkInsert('admin', [{
             type: Constants.SUPER_ADMIN,
             name: 'superAdmin',
-            email: 'admin@gmail.com',
+            email: 'admin@odyssey.com',
             mobile: '8888888888',
             password: hash,
             status: Constants.ACTIVE,

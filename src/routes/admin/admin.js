@@ -23,7 +23,7 @@ const {
     addEditMembership, membershipList
 } = require('../../controllers/admin/MembershipController');
 
-const {userKycDetails , updateUserKYCStatus, kycList} = require('../../controllers/admin/KYCController')
+const {userKycDetails, updateUserKYCStatus, kycList} = require('../../controllers/admin/KYCController')
 
 const authMiddleware = (() => {
     const chain = connect()
@@ -53,7 +53,7 @@ router.get('/sub-admin/:id', formidableMiddleware(), authMiddleware, subAdminDet
 router.post('/sub-admin-update-status', formidableMiddleware(), authMiddleware, subAdminUpdateStatus);
 
 // user
-router.get('/user-list', formidableMiddleware(), authMiddleware, userList);
+router.get('/user-list', authMiddlewareWithoutForm, userList);
 router.post('/user-status-update', formidableMiddleware(), authMiddleware, userUpdateStatus);
 router.get('/user-detail/:id', formidableMiddleware(), authMiddleware, userDetail);
 router.get('/user-kyc/:user_id', formidableMiddleware(), authMiddleware, userKycDetails);

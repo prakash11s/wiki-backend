@@ -22,6 +22,7 @@ module.exports = {
     kycAdd: async (req, res) => {
         const userId = req.authUserId
         const requestParams = req.fields
+        const imagePath = req.files.photo_id_image.path
         let image = false
         kycValidation(requestParams, res, async (validate) => {
             if (validate) {
@@ -57,7 +58,7 @@ module.exports = {
                     .then(async (result) => {
                         if (result) {
                             if (image) {
-                                await Helper.uploadImage(req.files.photo_id_image, Constants.PHOTO_IMAGE, photoIDImage)
+                                await Helper.uploadMediaToS3(photoIDImage, imagePath, Constants.KYC_IMAGE_PATH_S3, req, res)
                             }
                             Response.successResponseWithoutData(
                                 res,
@@ -88,6 +89,7 @@ module.exports = {
         const userId = req.authUserId
         const requestParams = req.fields
         let image = false
+        const imagePath = req.files.photo_id_image.path
         kycValidation(requestParams, res, async (validate) => {
             if (validate) {
                 const time = moment().unix()
@@ -117,8 +119,10 @@ module.exports = {
                         }
                         await result.save()
                         if (image) {
-                            console.log(await Helper.uploadImage(req.files.photo_id_image, Constants.PHOTO_IMAGE, photoIDImage))
-                            console.log(await Helper.removeOldImage(oldImageName, Constants.PHOTO_IMAGE, res))
+                            let isUpload = await Helper.uploadMediaToS3(photoIDImage, imagePath, Constants.KYC_IMAGE_PATH_S3, req, res)
+                            if (isUpload.code == 200) {
+                                await Helper.removeOldMediaOnS3(oldImageName, Constants.KYC_IMAGE_PATH_S3, res)
+                            }
                         }
                         Response.successResponseWithoutData(
                             res,
@@ -166,7 +170,6 @@ module.exports = {
                 }
             }).then(async (result) => {
                 if (result) {
-                    console.log(result)
                     result.photo_id_image = Helper.mediaUrl(Constants.PHOTO_IMAGE, result.photo_id_image)
                     return Response.successResponseData(
                         res,

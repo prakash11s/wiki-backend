@@ -26,18 +26,12 @@ module.exports = {
             terrace_hrs: {
                 type: Sequelize.INTEGER
             },
-            individual_price: {
-                type: Sequelize.INTEGER
-            },
-            group_price: {
-                type: Sequelize.INTEGER
-            },
-            terrace_price: {
-                type: Sequelize.INTEGER
-            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE
+            },
+            perks: {
+                type: Sequelize.STRING
             },
             updatedAt: {
                 allowNull: false,
