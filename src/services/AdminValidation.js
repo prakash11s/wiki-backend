@@ -391,4 +391,56 @@ module.exports = {
     return callback(true);
   },
 
+  advertAddEditValidation: (req, res, callback) => {
+    const schema = Joi.object().keys({
+      id: Joi.string().optional(),
+      name: Joi.string().max(100).trim().required(),
+      advert_image: Joi.string().trim().optional(),
+      description: Joi.string().required(),
+    });
+    const { error } = schema.validate(req);
+    if (error) {
+      return Response.validationErrorResponseData(
+          res,
+          res.__(Helper.validationMessageKey('advertAddEditValidation', error))
+      );
+    }
+    return callback(true);
+  },
+
+  addEditPodsValidation: (req, res, callback) => {
+    const schema = Joi.object().keys({
+      id: Joi.string().optional(),
+      name: Joi.string().max(100).required(),
+      type: Joi.string().valid(Constants.POD_TYPE.GROUP, Constants.POD_TYPE.INDIVIDUAL).required(),
+      price: Joi.number().required(),
+      location: Joi.string().required()
+    });
+    const { error } = schema.validate(req);
+    if (error) {
+      return Response.validationErrorResponseData(
+          res,
+          res.__(Helper.validationMessageKey('addEditPodsValidation', error))
+      );
+    }
+    return callback(true);
+  },
+
+  addEditTerraceValidation: (req, res, callback) => {
+    const schema = Joi.object().keys({
+      id: Joi.string().optional(),
+      name: Joi.string().max(100).required(),
+      price: Joi.number().required(),
+      location: Joi.string().required()
+    });
+    const { error } = schema.validate(req);
+    if (error) {
+      return Response.validationErrorResponseData(
+          res,
+          res.__(Helper.validationMessageKey('addEditTerraceValidation', error))
+      );
+    }
+    return callback(true);
+  },
+
 }

@@ -83,5 +83,16 @@
 	"verificationSuccess": "verificationSuccess",
 	"mobileVerificationValidationMobileRequired": "mobileVerificationValidationMobileRequired",
 	"pleaseVerifyYourEmailAndMobile": "pleaseVerifyYourEmailAndMobile",
-	"userRegisterValidationMobileMin": "userRegisterValidationMobileMin"
+	"userRegisterValidationMobileMin": "userRegisterValidationMobileMin",
+	"advertAddEditValidationAdvertImageRequired": "advertAddEditValidationAdvertImageRequired",
+	"advertAddedSuccessfully.": "advertAddedSuccessfully.",
+	"SendOTP": "SendOTP",
+	"SendOTPonEmail": "SendOTPonEmail",
+	"resendOTPValidationTypeOnly": "resendOTPValidationTypeOnly",
+	"MobileNumberNotExist": "MobileNumberNotExist",
+	"userNotExists": "userNotExists",
+	"podObjAddedSuccessfully": "podObjAddedSuccessfully",
+	"addEditPodsValidationTypeOnly": "addEditPodsValidationTypeOnly",
+	"podAddedSuccessfully": "podAddedSuccessfully",
+	"terraceAddedSuccessfully": "terraceAddedSuccessfully"
 }

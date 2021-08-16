@@ -11,23 +11,22 @@ module.exports = {
         await PurchaseHours.findAndCountAll({
             where: query,
             order: sorting,
-        })
-            .then(async (data) => {
-                if (data.rows.length > 0) {
-                    const result = data.rows
-                    return Response.successResponseData(
-                        res,
-                        new Transformer.List(result, purchaseHoursList).parse(),
-                        Constants.SUCCESS,
-                        res.locals.__('success'),
-                    )
-                }
+        }).then(async (data) => {
+            if (data.rows.length > 0) {
+                const result = data.rows
                 return Response.successResponseData(
                     res,
-                    [],
+                    new Transformer.List(result, purchaseHoursList).parse(),
                     Constants.SUCCESS,
-                    res.__('noDataFound')
+                    res.locals.__('success'),
                 )
-            })
+            }
+            return Response.successResponseData(
+                res,
+                [],
+                Constants.SUCCESS,
+                res.__('noDataFound')
+            )
+        })
     }
 };

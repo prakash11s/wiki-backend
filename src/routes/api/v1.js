@@ -16,7 +16,8 @@ const {
     changePassword,
     editProfile,
     verifyNewMobile,
-    myDetails
+    myDetails,
+    resendOTP
 } = require('../../controllers/api/authController')
 
 const {
@@ -28,7 +29,8 @@ const {
 const {
     allPodsList,
     podsDetails,
-    podsBooking
+    podsBooking,
+    addEditPods
 } = require('../../controllers/api/podsContoller')
 
 const {
@@ -77,6 +79,7 @@ router.post('/edit-profile', [authMiddleware], editProfile)
 router.post('/verify-new-email', formidableMiddleware(), [maintenanceMode], verifyNewEmail)
 router.post('/verify-new-mobile', formidableMiddleware(), [authMiddleware], verifyNewMobile)
 router.get('/my-details', formidableMiddleware(), [authMiddleware], myDetails)
+router.post('/resend-otp', resendOTP)
 
 
 //KYC Module
@@ -95,13 +98,13 @@ router.get('/get-terrace-pods-details', terracePodsDetails)
 router.post("/book-terrace-pod", [authMiddlewareWithoutFormidable], terracePodsBooking);
 
 //Membership
-router.get("/get-membership-details", getAllMemberships)
+router.get("/membership-list", getAllMemberships)
 
 //Purchase Hours
 router.get("/get-purchase-hours-list", getPurchaseHoursList);
 
 //Account
-router.get("/get-account-balance", formidableMiddleware(), [authMiddleware], getUserAccountBalance)
+router.get("/my-account", [authMiddleware], getUserAccountBalance)
 
 //Transaction
 router.post("/register-transaction", [authMiddlewareWithoutFormidable], registerNewTransaction);

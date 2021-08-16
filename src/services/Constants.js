@@ -21,6 +21,7 @@ module.exports = {
     CONTACT_US: 1,
     PROFILE_IMAGE_PATH_S3: 'user/profile-image',
     KYC_IMAGE_PATH_S3: 'user/kyc-image',
+    ADVERT_IMAGE_PATH_S3: 'adverts',
     USER_PROFILE_IMAGE: 'user/image',
     PHOTO_IMAGE: 'user/kyc/photo-id',
     ADDRESS_IMAGE: 'user/kyc/address',

@@ -22,8 +22,12 @@ const {
 const {
     addEditMembership, membershipList
 } = require('../../controllers/admin/MembershipController');
+const {addAdverts, advertsList} = require('../../controllers/admin/advertsController')
 
 const {userKycDetails, updateUserKYCStatus, kycList} = require('../../controllers/admin/KYCController')
+
+const {addEditPods, podsList, addEditTerrace, terraceList} = require('../../controllers/admin/pods&TerreceController')
+
 
 const authMiddleware = (() => {
     const chain = connect()
@@ -63,5 +67,19 @@ router.post('/user-kyc-update/:user_id', authMiddlewareWithoutForm, updateUserKY
 //Membership
 router.post('/membership', authMiddlewareWithoutForm, addEditMembership);
 router.get('/membership-list', authMiddlewareWithoutForm, membershipList);
+
+
+//Adverts Module
+router.post('/adverts', [authMiddleware], addAdverts)
+router.get('/adverts-list', [authMiddleware], advertsList)
+
+//Pods Module
+router.post('/pods', [authMiddlewareWithoutForm], addEditPods)
+router.get('/pods-list', [authMiddlewareWithoutForm], podsList)
+
+//Terrace Module
+router.post('/terrace', [authMiddlewareWithoutForm], addEditTerrace)
+router.get('/terrace-list', [authMiddlewareWithoutForm], terraceList)
+
 
 module.exports = router

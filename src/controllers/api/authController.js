@@ -7,6 +7,7 @@ const moment = require('moment')
 const {
     userRegisterValidation,
     userLoginValidation,
+    resendOTPValidation
 } = require('../../services/UserValidation')
 const {
     forgotPasswordValidation,
@@ -691,11 +692,11 @@ module.exports = {
                                     if (result) {
                                         if (image) {
                                             result.profile_image = Helper.mediaUrlForS3(Constants.PROFILE_IMAGE_PATH_S3, profileData.profile_image)
-                                            const locals = {
-                                                appName: Helper.AppName,
-                                                verification_code: otp,
-                                                link: `${process.env.API_URL}/reset-mobile-email?otp=${otp}`
-                                            };
+                                            // const locals = {
+                                            //     appName: Helper.AppName,
+                                            //     verification_code: otp,
+                                            //     link: `${process.env.API_URL}/reset-mobile-email?otp=${otp}`
+                                            // };
                                             const imageName = image ? unix : ''
                                             //await Helper.uploadImage(req.files.profile_image, Constants.USER_PROFILE_IMAGE, imageName)
                                             await Helper.uploadMediaToS3(imageName, imagePath, Constants.PROFILE_IMAGE_PATH_S3, req, res)
@@ -834,7 +835,7 @@ module.exports = {
                 }
             }).then(async (result) => {
                 if (result) {
-                    result.profile_image = Helper.mediaUrl(Constants.USER_PROFILE_IMAGE, result.profile_image)
+                    result.profile_image = result.profile_image ? Helper.mediaUrlForS3(Constants.USER_PROFILE_IMAGE, result.profile_image) : ''
                     return Response.successResponseData(
                         res,
                         new Transformer.Single(result, userDetails).parse(),
@@ -916,6 +917,94 @@ module.exports = {
             }
         });
     },
+
+    /**
+     * @description "This function is for Re-sending OTP."
+     * @param req
+     * @param res
+     */
+    resendOTP: async (req, res) => {
+        const requestParams = req.body
+        resendOTPValidation(requestParams, res, async (validate) => {
+            let opt = {}
+            if (requestParams.type === 'mobile') {
+                opt.mobile_number = requestParams.mobile_number
+            } else {
+                opt.email = requestParams.email
+            }
+            await User.findOne({
+                where: opt
+            }).then(async (data) => {
+                if (data) {
+                    const minutesLater = new Date();
+                    const emailExpiry = minutesLater.setMinutes(minutesLater.getMinutes() + 30)
+                    const mobileExpiry = minutesLater.setMinutes(minutesLater.getMinutes() + 15)
+                    const otp = requestParams.type === 'mobile' ? await Helper.makeRandomNumber(4) : await Helper.makeRandomNumber(6)
+                    if (requestParams.type === 'mobile') {
+                        const otpSent = await Helper.sendOtp(requestParams.mobile_number, otp)
+                        if (otpSent) {
+                            data.mobile_otp_expiry = mobileExpiry
+                            data.mobile_otp = otp
+                            await data.save()
+                            return Response.successResponseWithoutData(
+                                res,
+                                res.__('SendOTP'),
+                                Constants.SUCCESS
+                            )
+                        } else {
+                            return Response.errorResponseData(
+                                res,
+                                res.__('internalError'),
+                                Constants.INTERNAL_SERVER
+                            )
+                        }
+                    } else {
+                        const locals = {
+                            username: data.first_name,
+                            appName: Helper.AppName,
+                            email: requestParams.email,
+                            otp: otp,
+                        }
+                        try {
+                            const mail = await Mailer.sendMail(requestParams.email, 'Email Verification', Helper.emailVerificationMail, locals)
+                            if (!mail) {
+                                return Response.errorResponseData(res, res.locals.__('globalError'), Constants.INTERNAL_SERVER)
+                            } else {
+                                data.email_otp_expiry = emailExpiry
+                                data.email_otp = otp
+                                await data.save()
+                                return Response.successResponseWithoutData(
+                                    res,
+                                    res.__('SendOTPonEmail'),
+                                    Constants.SUCCESS
+                                )
+                            }
+                        } catch (e) {
+                            console.log(e)
+                            return Response.errorResponseData(
+                                res,
+                                e.message,
+                                Constants.INTERNAL_SERVER
+                            )
+                        }
+                    }
+                } else {
+                    return Response.successResponseWithoutData(
+                        res,
+                        res.locals.__('userNotExists'),
+                        Constants.FAIL
+                    )
+                }
+            }).catch((e) => {
+                console.log(e)
+                return Response.errorResponseData(
+                    res,
+                    res.__('internalError'),
+                    Constants.INTERNAL_SERVER
+                )
+            })
+        })
+    }
 
 }
 /*-----------------------------------User Functions-------------------------------------------*/

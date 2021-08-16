@@ -5,6 +5,7 @@ module.exports = {
         name: 'name',
         type: 'type',
         price: 'price',
+        location: 'location'
     },
 
     podsDetailsList: {

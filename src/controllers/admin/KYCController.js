@@ -133,7 +133,7 @@ module.exports = {
             distinct: true,
             include: [
                 {
-                    model: userAccount,
+                    model: User,
                     attributes: ['mobile', 'email', 'profile_image', 'is_kyc_verified']
                 }
             ]
