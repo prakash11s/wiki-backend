@@ -22,6 +22,7 @@ app.set('view engine', 'pug')
 app.set('views', path.join(`${__dirname}/src`, 'views'))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms'))
 app.use(i18n)
+app.use(cors())
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*')
@@ -32,7 +33,6 @@ app.use((req, res, next) => {
 
 // import routes
 const indexRoute = require('./src/routes')
-
 app.use('/', indexRoute)
 
 app.listen(port, () => {
